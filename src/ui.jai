@@ -190,17 +190,17 @@ show_item_list_ui :: () {
                     case .POLYLINE_SOUP2;
 
                         using soup := cast(*Polyline_Soup2_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+                        ImGui.Text(to_c_string(tprint("PolylineSoup2 #points, #polylines = %, %", point_count(shape), shape.polylines.count)));
 
                     case .POLYLINE_SOUP3;
 
                         using soup := cast(*Polyline_Soup3_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+                        ImGui.Text(to_c_string(tprint("PolyineSoup3 #points, #polylines = %, %", point_count(shape), shape.polylines.count)));
 
                     case .POLYGON_SOUP;
 
                         using soup := cast(*Polygon_Soup_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
+                        ImGui.Text(to_c_string(tprint("PolygonSoup #points, #polygons = %, %", point_count(shape), shape.polygons.count)));
 
                     case .MESH;
 
@@ -208,11 +208,11 @@ show_item_list_ui :: () {
                         if #complete mesh.mesh.geometry_format == {
                             case .UNKNOWN;
                             case .POINTS;
-                                ImGui.Text(to_c_string(tprint("#points = %", mesh.mesh.positions.count)));
+                                ImGui.Text(to_c_string(tprint("Mesh #points = %", mesh.mesh.positions.count)));
                             case .LINES;
-                                ImGui.Text(to_c_string(tprint("#points, #lines = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 2)));
+                                ImGui.Text(to_c_string(tprint("Mesh #points, #lines = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 2)));
                             case .TRIANGLES;
-                                ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
+                                ImGui.Text(to_c_string(tprint("Mesh #points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                         }
                 }
                 maybe_update_render_info(*it.render_info, *it.mesh);
@@ -855,11 +855,13 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
         assert(ImGui.IsMouseDown(.Left), "Expected checkbox sweep mode only when lmb is down");
 
         // Issue an SDL event to warps the mouse cursor position to keep it from drifting outside the checkbox column
-        if io().MousePos.x < xx app.checkbox_sweep_mode_mouse_min_x {
-            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_min_x, xx io().MousePos.y);
+        // We snap to the middle half of the checkbox since using the whole checkbox means you can sometimes skip around the checkbox boundary
+        margin : s32 = (app.checkbox_sweep_mode_mouse_max_x - app.checkbox_sweep_mode_mouse_min_x) / 4;
+        if io().MousePos.x < xx (app.checkbox_sweep_mode_mouse_min_x + margin) {
+            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_min_x + margin, xx io().MousePos.y);
         }
-        if io().MousePos.x > xx app.checkbox_sweep_mode_mouse_max_x {
-            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_max_x, xx io().MousePos.y);
+        if io().MousePos.x > xx (app.checkbox_sweep_mode_mouse_max_x - margin) {
+            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_max_x - margin, xx io().MousePos.y);
         }
 
         if io().KeyCtrl || io().KeyShift {

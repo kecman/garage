@@ -1,24 +1,15 @@
 ## Next Release
 
-Make imgui.jai handle unix and windows better
-Does comma work in the console? What is the enum out of range thing??
-The TextColored function in jai-imgui is broken, it doesn't even pass the varargs but also, the api is inconvenient because it uses *u8
-
-- [Bug] Fix the keyboard input capture which blocks the key bindings in an annoying way
-- [Bug] Clear button should reset the bounding sphere in the selection mesh
-- [Bug] Changing the enabled checkbox on the clipping planes when having an item selection doesn't apply the changes to the item. Found this with only a single item in the list.
 - [Bug] Fix the labels appearing outside the clipping box
-- [Bug] Fix the occassional deltatime is zero bug
-
+- [Bug] When loading a file that doesn't exist the text file handler reports unable to load file (good) but the obj loader also reports empty vertices (bad, to be fixed)
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, size, filename etc
 - [Commands] Command to compute parameterisation?
-- [UI/UX] Sweep drag improvements:
-  - When sweeping checkboxes constrain the mouse to the vertical region of the boxes
-  - Add a mode to sweeping checkboxes (enabled by holding a modifier?) to toggle the box on entry and exit. User story: animate geometry as you sweep. Generalisation: could have a cooldown rather than just toggling off on exit.
-  - Sweep drag should work with scroll wheel in item list, to make this feel really nice I guess we should be updating all the checkboxes intersecting the segment connecting the previous and current position accounting for the scroll wheel
+- [UI/UX] Sweep drag improvements
+  - have a cooldown rather than just toggling off on exit
+  - make it work with scroll wheel in a long item list, does it work already?
+- [UI/UX] File reload should not skip empty files, the filenames could dim when the reload causes the file to become empty
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
-- [UI/UX] Implement wild cards for file loading
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 - [UI/UX] Add some options for backface shading, including an obnoxiously visible one for finding holes in meshes
 - [UI/UX] Fix issue where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
@@ -26,16 +17,6 @@ The TextColored function in jai-imgui is broken, it doesn't even pass the vararg
 - [UI/UX] Make long lists of items managable in the context menu
 - [UI/UX] Improve camera panning
 - [UI/UX] Make normals clip
-
-- Windows build devlog
-  - Make sure to run the developer console with 64bit settings (x64 Native Tools Command Prompt for VS2019)
-  - Run the update_imgui_subrepo_and_rebuild_libs.bat from that console, it generates some changes wrt to what is in the repo
-  - Note the warning about deprecated concatenate, should be replaced with join soon
-  - Tested that build_examples.jai works in jai-imgui repo
-  - Copied imgui.jai and the win/ folder into Garage/src/modules/jai-imgui
-  - TODO Make sure to add instructions for updating somewhere
-
-
 
 ## Backlog
 

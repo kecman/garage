@@ -207,30 +207,44 @@ main :: () {
     SDL_Quit();
 }
 
+load_one_file :: (filename : string) {
+    found, _ := find_entity_with_max_generation_index(filename);
+    if found {
+        if #complete app.settings.duplicate_file_behaviour == {
+            case .OVERWRITE; #through;
+            case .IGNORE;
+                // When loading files from the command line .OVERWRITE and .IGNORE have the same behaviour
+                log("Skipped file: '%' (already loaded)\n", filename);
+            case .APPEND;
+                entity := load_entity_from_file(filename);
+                if entity {
+                    entity.generation_index = found.generation_index + 1;
+                    array_add(*app.entities, entity);
+                }
+        }
+    } else {
+        entity := load_entity_from_file(filename);
+        if entity {
+            array_add(*app.entities, entity);
+        }
+    }
+}
+
 load_from_command_line :: () {
     args := get_command_line_arguments();
     defer array_free(args);
     for 1..args.count-1 {
-        found, _ := find_entity_with_max_generation_index(args[it]);
-        if found {
-            if #complete app.settings.duplicate_file_behaviour == {
-                case .OVERWRITE; #through;
-                case .IGNORE;
-                    // When loading files from the command line .OVERWRITE and .IGNORE have the same behaviour
-                    log("Skipped file: '%' (already loaded)\n", args[it]);
-                    break;
-                case .APPEND;
-                    entity := load_entity_from_file(args[it]);
-                    if entity {
-                        entity.generation_index = found.generation_index + 1;
-                        array_add(*app.entities, entity);
-                    }
+        // @Robustness handle wildcards properly
+        if find_any_char(args[it], "*") {
+            files := file_list(".", false, false);
+            defer array_free(files);
+            for file, _ : files {
+                if wildcard_match(file, args[it]) {
+                    load_one_file(file);
+                }
             }
         } else {
-            entity := load_entity_from_file(args[it]);
-            if entity {
-                array_add(*app.entities, entity);
-            }
+            load_one_file(args[it]);
         }
     }
     fit_on_screen();
