@@ -10,12 +10,13 @@
   - ex2. `garage debug*` will load all non-empty files starting with 'debug' and which have a loadable format
   - ex3. `garage *` will load all non-empty files which have a loadable format
 - Improved item list checkbox UX and updated documentation in help window (press h for help)
-  - Warp the mouse cursor position to prevent it from leaving the column of checkboxes while sweeping
-  - All checkboxes intersecting a per-frame mouse sweep are updated so none are missed if the mouse is moved a lot in a single frame
-  - Holding control while sweeping will focus the current item (i.e., show the currently hovered item and hide items that are swept over)
-  - Holding shift app.checkbox_sweep_mode_mouse_min_xwhile sweeping will focus the current item and update the camera to fit that item to the screen
-- Made Selection Mode checkbox a regular checkbox, unaffected by checkbox sweeping of the item list
-- Added item type name to the item context popup window
+  - Sweeping constrains the mouse to stay within the column of checkboxes---you don't need to do careful vertical sweeps anymore
+  - Sweeping updates all checkboxes intersecting a per-frame mouse sweep so none are missed if the mouse moved a lot in one frame
+  - Sweeping with LMB down now pastes the state of the initially clicked checkbox over the others (previous it would toggle the state)
+  - Sweeping with Control+LMB will show the hovered item but turn off items that are swept over
+  - Sweeping with Shift+LMB will show the hovered item but turn off items that are swept over and will update the camera so the hovered item fills the screen
+- Made the Selection Mode checkbox a regular checkbox, unaffected by checkbox sweeping of the item list
+- Added the item type name to the item context popup window
 - Fixed a bug where overwrite option for handling dropped files would not preserve display settings e.g., rendering mode
 
 ## Version: v0.1.1, 9 June 2021
