@@ -1,3 +1,7 @@
+## Version: v0.1.3, Unreleased
+
+- Added support for simple .wkt files, containing exactly one of the following geometry types: MULTIPOINT
+
 ## Version: v0.1.2, 16 July 2021
 
 - Added initial support for windows, things seem to work but it isn't well tested yet

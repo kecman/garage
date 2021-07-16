@@ -144,7 +144,13 @@ color_from_path :: (path : string) -> Vector4 {
 load_entity_from_file :: (filename : string) -> *Entity {
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);
-    mesh := load_obj(filename);
+
+    mesh : Mesh;
+    if ends_with(filename, "obj") {
+        mesh = load_obj(filename);
+    } else if ends_with(filename, "wkt") {
+        mesh = load_wkt(filename);
+    }
 
     if !mesh.positions.count {
         log("Skipped (empty vertex position data)\n");

@@ -173,6 +173,8 @@ ImGui :: #import "jai-imgui"(LINK_STATIC=true);
 #load "keymap.jai";
 #load "inspector.jai";
 #load "settings.jai";
+#load "lexer.jai";
+#load "parser.jai";
 
 #import "Compiler";
 #run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
