@@ -1,7 +1,7 @@
 ## Version: v0.1.3, Unreleased
 
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
-  - LINESTRING, MULTILINESTRING, MULTIPOINT
+  - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING
 
 ## Version: v0.1.2, 16 July 2021
 
