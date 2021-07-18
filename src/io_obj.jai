@@ -1,6 +1,5 @@
-// Collect the verts, lines, faces etc, and decide what the type of the thing was at the end
-// ex1. All verts, l with xy only and no z, or const z => polyline|polylinesoup
-// Probably polyline2 should have a z height too
+// @Refactor Rewrite this using the lexer/parser
+// @Refactor Read shape from an obj and then turn that into a mesh?
 
 has_extension :: (name: string, extension: string) -> bool {
     if name.count < extension.count  return false;
@@ -10,14 +9,14 @@ has_extension :: (name: string, extension: string) -> bool {
 }
 
 // @Incomplete use the temp allocator for all intermediate allocation? see the memory management how_to
-load_obj :: (filename : string) -> Mesh {
+load_obj :: (filename : string) -> *Entity {
 
     // http://paulbourke.net/dataformats/obj/
 
-    result : Mesh;
+    log("Loading file '%'... ", filename);
 
     if !has_extension(filename, "obj") {
-        return result;
+        return null;
     }
 
     handler: Text_File_Handler;
@@ -26,10 +25,10 @@ load_obj :: (filename : string) -> Mesh {
 
     start_file(*handler, "load_obj", filename, false);
     if handler.failed {
-        deinit(*result);
-        empty : Mesh;
-        return empty;
+        return null;
     }
+
+    mesh : Mesh;
 
     while true {
         line, found := consume_next_line(*handler);
@@ -51,7 +50,7 @@ load_obj :: (filename : string) -> Mesh {
                     handler.failed = true;
                     continue;
                 }
-                array_add(*result.positions, vertex);
+                array_add(*mesh.positions, vertex);
             case "vn"; // @Incomplete
                 normal, dim := parse_upto_3d(*handler, rhs);
                 if dim != 3 {
@@ -59,7 +58,7 @@ load_obj :: (filename : string) -> Mesh {
                     handler.failed = true;
                     continue;
                 }
-                array_add(*result.normals, normal);
+                array_add(*mesh.normals, normal);
             case "vt"; // @Incomplete
             case "p";
                 point, dim := parse_upto_3d(*handler, rhs);
@@ -73,16 +72,16 @@ load_obj :: (filename : string) -> Mesh {
                     continue;
                 }
 
-                if result.geometry_format == .UNKNOWN {
-                    result.geometry_format = .POINTS;
-                } else if result.geometry_format != .POINTS {
-                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.POINTS, result.geometry_format);
+                if mesh.geometry_format == .UNKNOWN {
+                    mesh.geometry_format = .POINTS;
+                } else if mesh.geometry_format != .POINTS {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.POINTS, mesh.geometry_format);
                     handler.failed = true;
                     continue;
                 }
 
                 // obj indices are 1-based
-                array_add(*result.indices, cast(u32)point.x - 1);
+                array_add(*mesh.indices, cast(u32)point.x - 1);
             case "l";
                 segment, dim := parse_upto_3d(*handler, rhs);
                 if dim != 2 {
@@ -95,17 +94,17 @@ load_obj :: (filename : string) -> Mesh {
                     continue;
                 }
 
-                if result.geometry_format == .UNKNOWN {
-                    result.geometry_format = .LINES;
-                } else if result.geometry_format != .LINES {
-                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, result.geometry_format);
+                if mesh.geometry_format == .UNKNOWN {
+                    mesh.geometry_format = .LINES;
+                } else if mesh.geometry_format != .LINES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, mesh.geometry_format);
                     handler.failed = true;
                     continue;
                 }
 
                 // obj indices are 1-based
-                array_add(*result.indices, cast(u32)segment.x - 1);
-                array_add(*result.indices, cast(u32)segment.y - 1);
+                array_add(*mesh.indices, cast(u32)segment.x - 1);
+                array_add(*mesh.indices, cast(u32)segment.y - 1);
             case "f"; // @Incomplete
                 triangle := parse_triangle(*handler, rhs);
 
@@ -115,32 +114,62 @@ load_obj :: (filename : string) -> Mesh {
                     continue;
                 }
 
-                if result.geometry_format == .UNKNOWN {
-                    result.geometry_format = .TRIANGLES;
-                } else if result.geometry_format != .TRIANGLES {
-                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.TRIANGLES, result.geometry_format);
+                if mesh.geometry_format == .UNKNOWN {
+                    mesh.geometry_format = .TRIANGLES;
+                } else if mesh.geometry_format != .TRIANGLES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.TRIANGLES, mesh.geometry_format);
                     handler.failed = true;
                     continue;
                 }
 
                 // obj indices are 1-based
                 // TODO assert no overflow
-                array_add(*result.indices, cast(u32)triangle.indices[0] - 1);
-                array_add(*result.indices, cast(u32)triangle.indices[1] - 1);
-                array_add(*result.indices, cast(u32)triangle.indices[2] - 1);
+                array_add(*mesh.indices, cast(u32)triangle.indices[0] - 1);
+                array_add(*mesh.indices, cast(u32)triangle.indices[1] - 1);
+                array_add(*mesh.indices, cast(u32)triangle.indices[2] - 1);
             case;
                 // error(handler, "Unexpected '%'.\n", key_name); // @Cleanup: lots of spam for a point cloud file
                 continue;
         }
     }
 
-    // for result.points print("points: %\n", it);
-    // for result.indices print("indices: %\n", it);
+    // for mesh.points print("points: %\n", it);
+    // for mesh.indices print("indices: %\n", it);
 
-    if handler.failed {
-        deinit(*result);
-        empty : Mesh;
-        return empty;
+    // @FIXME @Cleanup this is a confusing error message to print if the file didn't exist or had errors etc
+    if !mesh.positions.count {
+        log("Skipped (empty vertex position data)\n");
+        handler.failed = true;
+    }
+
+    result : *Entity;
+
+    dim := 2;
+    for mesh.positions if it.z != 0 dim = 3;
+
+    if #complete mesh.geometry_format == {
+        case .UNKNOWN;
+            log("Skipped (Could not detect mesh geometry format)\n");
+            handler.failed = true;
+        case .LINES;
+            if dim == 2 {
+                result = New(Polyline_Soup2_Entity);
+            } else if dim == 3 {
+                result = New(Polyline_Soup3_Entity);
+            }
+        case .POINTS; #through;
+        case .TRIANGLES;
+            result = New(Mesh_Entity);
+    }
+
+    init_entity_base_parameters(result, filename, mesh);
+
+    if result {
+        if handler.failed {
+            deinit(result);
+        } else {
+            log("Inferred entity type '%'", result.type);
+        }
     }
 
     return result;

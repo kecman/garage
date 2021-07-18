@@ -141,90 +141,51 @@ color_from_path :: (path : string) -> Vector4 {
     return make_vector4(r, g, b, 1.);
 }
 
-load_entity_from_file :: (filename : string) -> *Entity {
-    // @Incomplete: support polygon types using wkt format and improve reporting here
-    log("Loading file '%'... ", filename);
+init_entity_base_parameters :: (entity : *Entity, filename : string, mesh : Mesh) {
+    if !entity return;
 
-    mesh : Mesh;
-    if ends_with(filename, "obj") {
-        mesh = load_obj(filename);
-    } else if ends_with(filename, "wkt") {
-        mesh = load_wkt(filename);
-    }
-
-    if !mesh.positions.count {
-        log("Skipped (empty vertex position data)\n");
-        deinit(*mesh);
-        return null;
-    }
-
-    Common_Init :: () #expand {
-        `entity.mesh = mesh;
-        `entity.fully_pathed_filename = copy_string(filename);
-        `entity.loaded_filetime = get_current_file_time();
-
-        log("Inferred entity type '%'", `entity.type);
-    }
+    entity.fully_pathed_filename = copy_string(filename);
+    entity.loaded_filetime = get_current_file_time();
 
     if #complete mesh.geometry_format == {
         case .LINES;
 
-            bbox := bounding_box(mesh);
-            if diagonal(bbox).z == 0 {
-
-                entity := New(Polyline_Soup2_Entity);
-                shape, ok := to_Polyline_Soup2(mesh);
-                assert(ok);
-                entity.shape = shape;
-
-                Common_Init();
-                entity.display_info.wireframe_visible = true;
-                entity.display_info.wireframe_width = 1;
-                entity.display_info.wireframe_color = color_from_path(filename);
-
-                return entity;
-            } else {
-
-                entity := New(Polyline_Soup3_Entity);
-                shape, ok := to_Polyline_Soup3(mesh);
-                assert(ok);
-                entity.shape = shape;
-
-                Common_Init();
-                entity.display_info.wireframe_visible = true;
-                entity.display_info.wireframe_width = 1;
-                entity.display_info.wireframe_color = color_from_path(filename);
-
-                return entity;
-            }
+            entity.mesh = mesh;
+            entity.display_info.wireframe_visible = true;
+            entity.display_info.wireframe_width = 1;
+            entity.display_info.wireframe_color = color_from_path(filename);
 
         case .TRIANGLES;
 
-            entity := New(Mesh_Entity);
-
-            Common_Init();
+            entity.mesh = mesh;
             entity.display_info.surface_visible = true;
             entity.display_info.surface_color = color_from_path(filename);
 
-            return entity;
-
         case .POINTS;
 
-            entity := New(Mesh_Entity);
-
-            Common_Init();
+            entity.mesh = mesh;
+            entity.display_info.surface_visible = true;
             entity.display_info.points_visible = true;
             entity.display_info.points_size = 2;
             entity.display_info.points_color = color_from_path(filename);
 
-            return entity;
-
         case .UNKNOWN;
 
-            log("Skipped (unsupported geometry type %)\n", mesh.geometry_format);
-            deinit(*mesh);
-            return null;
+            log("Skipped (Could not detect mesh geometry format)\n");
+            deinit(entity);
     }
+}
+
+load_entity_from_file :: (filename : string) -> *Entity {
+    result : *Entity;
+
+    if ends_with(filename, "obj") {
+        result = load_obj(filename);
+    } else if ends_with(filename, "wkt") {
+        // result = load_wkt(filename);
+    }
+
+    return result;
 }
 
 Closest_Vertex_On_Entity :: struct {
@@ -297,7 +258,9 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
 reload_entities :: () {
     for app.entities if it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
-        replace_entity(it, it_index, entity);
+        if entity {
+            replace_entity(it, it_index, entity);
+        }
     }
 }
 
