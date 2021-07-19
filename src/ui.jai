@@ -150,7 +150,9 @@ show_item_list_ui :: () {
                 if it.fully_pathed_filename.count {
                     if ImGui.Button(imgui_label("Reload", it)) {
                         entity := load_entity_from_file(it.fully_pathed_filename);
-                        replace_entity(it, it_index, entity);
+                        if entity {
+                            replace_entity(it, it_index, entity);
+                        }
                     }
                     ImGui.SameLine();
                     text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
@@ -227,7 +229,9 @@ show_item_list_ui :: () {
                     if it.fully_pathed_filename.count {
                         if ImGui.Button(imgui_label("Reload", it)) {
                             entity := load_entity_from_file(it.fully_pathed_filename);
-                            replace_entity(it, it_index, entity);
+                            if entity {
+                                replace_entity(it, it_index, entity);
+                            }
                         }
                         ImGui.SameLine();
                         text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
@@ -273,17 +277,20 @@ show_item_list_ui :: () {
                     if set.vertex_label_style_update.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
                     if set.wireframe_visible wireframe_visible = other.wireframe_visible;
-                    if set.wireframe_color   wireframe_color   = other.wireframe_color;
                     if set.wireframe_width   wireframe_width   = other.wireframe_width;
                     if set.surface_visible   surface_visible   = other.surface_visible;
-                    if set.surface_color     surface_color     = other.surface_color;
                     if set.display_mode      display_mode      = other.display_mode;
                     if set.normals_visible   normals_visible   = other.normals_visible;
-                    if set.normals_color     normals_color     = other.normals_color;
                     if set.normals_length    normals_length    = other.normals_length;
                     if set.points_visible    points_visible    = other.points_visible;
-                    if set.points_color      points_color      = other.points_color;
                     if set.points_size       points_size       = other.points_size;
+
+                    for 0..3 {
+                        if set.wireframe_color[it]   wireframe_color.component[it]   = other.wireframe_color.component[it];
+                        if set.surface_color[it]     surface_color.component[it]     = other.surface_color.component[it];
+                        if set.normals_color[it]     normals_color.component[it]     = other.normals_color.component[it];
+                        if set.points_color[it]      points_color.component[it]      = other.points_color.component[it];
+                    }
 
                     if set.color_reset {
                         color  := get_primary_color(it);
@@ -584,20 +591,20 @@ Vertex_Label_Style_Update :: struct {
 
 Display_Info_Update :: struct {
     points_visible : bool;
-    points_color : bool;
+    points_color : [4]bool;
     points_size : bool;
     vertex_label_style_update : Vertex_Label_Style_Update;
 
     normals_visible : bool;
-    normals_color : bool;
+    normals_color : [4]bool;
     normals_length : bool;
 
     wireframe_visible : bool;
-    wireframe_color : bool;
+    wireframe_color : [4]bool;
     wireframe_width : bool;
 
     surface_visible : bool;
-    surface_color : bool;
+    surface_color : [4]bool;
 
     color_reset : bool;
     display_mode : bool;
@@ -622,23 +629,29 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
     set.display_mode = combo_box("", *display_info.display_mode, type_info(type_of(display_info.display_mode)));
     ImGui.PopItemWidth();
 
-    set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
-    // Show_Tooltip("Visible");
-    ImGui.SameLine();
-    set.points_color = ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.SameLine();
-    ImGui.Text("Points    Visible|Color|Size:  ");
-    ImGui.SameLine();
-    ImGui.PushItemWidth(70);
-    set.points_size = ImGui.InputInt("##points_size", *display_info.points_size);
-    display_info.points_size = clamp(display_info.points_size, 1, 10);
-    ImGui.PopItemWidth();
+    {
+        set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
+        // Show_Tooltip("Visible");
+        ImGui.SameLine();
+        old_color := display_info.points_color;
+        ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
+        for 0..3 set.points_color[it] = old_color.component[it] != display_info.points_color.component[it];
+        ImGui.SameLine();
+        ImGui.Text("Points    Visible|Color|Size:  ");
+        ImGui.SameLine();
+        ImGui.PushItemWidth(70);
+        set.points_size = ImGui.InputInt("##points_size", *display_info.points_size);
+        display_info.points_size = clamp(display_info.points_size, 1, 10);
+        ImGui.PopItemWidth();
+    }
 
     if normals_ui {
         set.normals_visible = ImGui.Checkbox(imgui_label("##normals_visible", display_info), *display_info.normals_visible);
         // Show_Tooltip("Visible");
         ImGui.SameLine();
-        set.normals_color = ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
+        old_color := display_info.normals_color;
+        ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
+        for 0..3 set.normals_color[it] = old_color.component[it] != display_info.normals_color.component[it];
         ImGui.SameLine();
         ImGui.Text("Normals   Visible|Color|Length:");
         ImGui.SameLine();
@@ -651,7 +664,9 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
         set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
         // Show_Tooltip("Visible");
         ImGui.SameLine();
-        set.wireframe_color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
+        old_color := display_info.wireframe_color;
+        ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
+        for 0..3 set.wireframe_color[it] = old_color.component[it] != display_info.wireframe_color.component[it];
         ImGui.SameLine();
         ImGui.Text("Lines     Visible|Color|Width: ");
         ImGui.SameLine();
@@ -665,7 +680,9 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
         set.surface_visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.surface_visible);
         // Show_Tooltip("Visible");
         ImGui.SameLine();
-        set.surface_color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
+        old_color := display_info.surface_color;
+        ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
+        for 0..3 set.surface_color[it] = old_color.component[it] != display_info.surface_color.component[it];
         ImGui.SameLine();
         ImGui.Text("Triangles Visible|Color");
     }

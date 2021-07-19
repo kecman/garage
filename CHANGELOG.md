@@ -2,6 +2,7 @@
 
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING
+- Fixed a UX issue so only the specific color channels that were changed get updated, this makes it possible to bulk change item opacity without also setting them to all have the same color
 
 ## Version: v0.1.2, 16 July 2021
 
