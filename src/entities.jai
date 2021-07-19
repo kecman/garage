@@ -42,6 +42,7 @@ Polygon_Soup_Entity :: struct {
     using base : Entity;
     type = .POLYGON_SOUP;
 
+    // @TODO add edge mesh for rendering, it'll duplicate the shape data but saves on rendering code
     shape : Polygon_Soup;
 }
 
@@ -182,7 +183,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
     if ends_with(filename, "obj") {
         result = load_obj(filename);
     } else if ends_with(filename, "wkt") {
-        // result = load_wkt(filename);
+        result = load_wkt(filename);
     }
 
     return result;

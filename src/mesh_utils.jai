@@ -1,5 +1,5 @@
 
-to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
+to_Mesh :: (shape : $T/Polyline_Soup) -> Mesh, bool #must {
     mesh : Mesh;
 
     if is_empty(shape) {
@@ -15,11 +15,21 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
         }
 
         point := polyline.points[0];
+#if T == Polyline_Soup2 {
         array_add(*mesh.positions, make_vector3(point.x, point.y, 0));
+} else {
+        #assert(T == Polyline_Soup3);
+        array_add(*mesh.positions, point);
+}
 
         for edge_index : 0..polyline.points.count-2 {
             point = polyline.points[edge_index + 1];
+#if T == Polyline_Soup2 {
             array_add(*mesh.positions, make_vector3(point.x, point.y, 0));
+} else {
+            #assert(T == Polyline_Soup3);
+            array_add(*mesh.positions, point);
+}
             array_add(*mesh.indices, xx (index_offset + edge_index));
             array_add(*mesh.indices, xx (index_offset + edge_index  + 1));
         }

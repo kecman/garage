@@ -22,6 +22,13 @@ error :: (p: *Parser, format: string, args: .. Any, flags := Log_Flags.NONE, loc
     p.failed = true;
 } @PrintLike
 
+error :: (p: *Parser, token : Token, format: string, args: .. Any, flags := Log_Flags.NONE, loc := #caller_location) {
+    using token.location;
+    new_format := tprint("Parse error at %:%:%. %", fully_pathed_filename, line_number, character_number, format);
+    log(new_format, ..args, flags=Log_Flags.ERROR|.CONTENT|flags, loc=loc);
+    p.failed = true;
+} @PrintLike
+
 eat_token :: next_token;
 next_token :: (using p: *Parser) -> Token {
     if current_token >= tokens.count return tokens[tokens.count-1];
