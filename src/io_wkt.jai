@@ -57,9 +57,7 @@ load_wkt :: (filename : string) -> *Entity {
             entity = New(Mesh_Entity);
             entity.mesh.geometry_format = .POINTS;
 
-            expect_and_eat(*parser, xx #char "(");
             points := parse_points(*parser);
-            expect_and_eat(*parser, xx #char ")");
 
             if parser.failed {
 
@@ -81,9 +79,7 @@ load_wkt :: (filename : string) -> *Entity {
 
         } else if eat_possible_directive(*parser, "LINESTRING") {
 
-            expect_and_eat(*parser, xx #char "(");
             points := parse_points(*parser);
-            expect_and_eat(*parser, xx #char ")");
 
             if parser.failed {
 
@@ -114,9 +110,7 @@ load_wkt :: (filename : string) -> *Entity {
             polyline_soup2 : Polyline_Soup2;
             polyline_soup3 : Polyline_Soup3;
 
-            expect_and_eat(*parser, xx #char "(");
-            dim := parse_points_soup(*parser, *polyline_soup2, *polyline_soup3);
-            expect_and_eat(*parser, xx #char ")");
+            dim := parse_polyline_soup(*parser, *polyline_soup2, *polyline_soup3);
 
             if dim == 2 {
 
@@ -139,16 +133,29 @@ load_wkt :: (filename : string) -> *Entity {
                 break;
             }
 
-        }
-        /* else if eat_possible_directive(*parser, "POLYGON") {
+        } else if eat_possible_directive(*parser, "POLYGON") {
 
-            entity := New(Polygon_Soup_Entity);
-            parse_polygon(*parser, *entity.shape);
-            entity.mesh = to_Mesh(entity.shape);
+            polygon := parse_polygon(*parser);
 
-        }
-        */
-         else {
+            e := New(Polygon_Soup_Entity);
+            array_add(*e.shape.polygons, polygon);
+            e.mesh, ok = to_Mesh(e.shape);
+            if !ok parser.failed = true;
+
+            entity = e;
+
+        } else if eat_possible_directive(*parser, "MULTIPOLYGON") {
+
+            polygon_soup := parse_polygon_soup(*parser);
+
+            e := New(Polygon_Soup_Entity);
+            e.shape = polygon_soup;
+            e.mesh, ok = to_Mesh(e.shape);
+            if !ok parser.failed = true;
+
+            entity = e;
+
+        } else {
 
             error(*parser, peek_token(*parser), "Unexpected token %.\n", to_string(peek_token(*parser)));
             break;
@@ -156,7 +163,7 @@ load_wkt :: (filename : string) -> *Entity {
         }
     }
 
-    if parser.failed || entity.type == .UNKNOWN {
+    if parser.failed || (entity && entity.type == .UNKNOWN) {
         if entity deinit(entity);
         return null;
     }
@@ -172,13 +179,7 @@ is_number :: (t : Token) -> bool {
     return t.type == .INTEGER || t.type == .FLOAT;
 }
 
-// @Refactor: Just pass in the container for the 2d/3d point(s) and return which was filled in!
-// @Refactor: Just pass in the container for the 2d/3d point(s) and return which was filled in!
-// @Refactor: Just pass in the container for the 2d/3d point(s) and return which was filled in!
-// @Refactor: Just pass in the container for the 2d/3d point(s) and return which was filled in!
-// @Refactor: Just pass in the container for the 2d/3d point(s) and return which was filled in!
-// NB. This should also improve the current debug experience, which isn't great using tagged unions
-
+// @Refactor: Just pass in the 2d/3d point and return which was filled in!
 Parsed_Point :: Tagged_Union(Vector2, Vector3);
 
 // Parses and returns a 2D or 3D point, or sets p.failed to true
@@ -201,11 +202,15 @@ parse_point :: (p : *Parser, loc := #caller_location) -> Parsed_Point {
     return point;
 }
 
+// @Refactor: Just pass in the container for the 2d/3d points and return which was filled in!
 Parsed_Points :: Tagged_Union([..]Vector2, [..]Vector3);
 
 // Parses and returns an array of 2D or 3D points, or sets p.failed to true
 parse_points :: (p : *Parser, loc := #caller_location) -> Parsed_Points {
+
     points : Parsed_Points = ---;
+
+    expect_and_eat(p, xx #char "(");
 
     while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
         point := parse_point(p);
@@ -238,15 +243,19 @@ parse_points :: (p : *Parser, loc := #caller_location) -> Parsed_Points {
         eat_possible_token(p, xx #char ",");
     }
 
+    expect_and_eat(p, xx #char ")");
+
     return points;
 }
 
-// Fills in one of the passed point soups and returns a dimension to indicate which
-parse_points_soup :: (p : *Parser, polyline_soup2 : *Polyline_Soup2, polyline_soup3 : *Polyline_Soup3, loc := #caller_location) -> dim : int {
+// Fills in one of the passed polyline soups and returns a dimension to indicate which
+parse_polyline_soup :: (p : *Parser, polyline_soup2 : *Polyline_Soup2, polyline_soup3 : *Polyline_Soup3, loc := #caller_location) -> dim : int {
 
     dim := -1;
+
+    expect_and_eat(p, xx #char "(");
+
     while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
-        expect_and_eat(p, xx #char "(", loc);
 
         points := parse_points(p);
 
@@ -272,31 +281,59 @@ parse_points_soup :: (p : *Parser, polyline_soup2 : *Polyline_Soup2, polyline_so
             }
         }
 
-        expect_and_eat(p, xx #char ")", loc);
         eat_possible_token(p, xx #char ",");
     }
+
+    expect_and_eat(p, xx #char ")");
 
     return dim;
 }
 
+parse_polygon :: (p : *Parser, loc := #caller_location) -> Polygon {
 
-/*
-parse_polygon :: (p : *Parser, mesh : *Mesh, loc := #caller_location) {
-    mesh.geometry_format = .;
+    polygon : Polygon;
 
     expect_and_eat(p, xx #char "(", loc);
-    point_count_before := mesh.positions.count;
+
+    is_outer := true;
 
     while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
-        parse_point(p, mesh);
-        eat_possible_token(p, xx #char ",");
-    }
 
-    for point_count_before..mesh.positions.count-2 {
-        array_add(*mesh.indices, xx it);
-        array_add(*mesh.indices, xx (it + 1));
+        points := parse_points(p);
+
+        if p.failed {
+            break;
+        } else if points.tag == [..]Vector2 {
+            if is_outer {
+                ring : Ring;
+                ring.points = <<isa(points, [..]Vector2);
+                polygon.outer_ring = ring;
+            } else {
+                array_add(*polygon.inner_rings).points = <<isa(points, [..]Vector2);
+            }
+        } else {
+            error(p, peek_token(p), "Expected 2D points but got 3D points");
+        }
+
+        eat_possible_token(p, xx #char ",");
+        is_outer = false;
     }
 
     expect_and_eat(p, xx #char ")", loc);
+
+    return polygon;
 }
-*/
+
+parse_polygon_soup :: (p : *Parser, loc := #caller_location) -> Polygon_Soup {
+
+    polygon_soup : Polygon_Soup;
+
+    expect_and_eat(p, xx #char "(", loc);
+    while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
+        array_add(*polygon_soup.polygons, parse_polygon(p));
+        eat_possible_token(p, xx #char ",");
+    }
+    expect_and_eat(p, xx #char ")", loc);
+
+    return polygon_soup;
+}
