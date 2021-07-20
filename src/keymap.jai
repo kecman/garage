@@ -78,6 +78,7 @@ init_keymap :: ()
     add_key(*app.keymap, reset_camera, "Reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
+    add_key(*app.keymap, toggle_current_selection_if_visible, "Toggle/complement visible item selection", xx #char "a", .{shift_pressed=true}); // @Refactor: add sweep selection
 
     add_key(*app.keymap, reload_entities, "Reload selected items", xx Special_Key_Code.F5);
     add_key(*app.keymap, remove_selected_items, "Remove selected items", xx Special_Key_Code.DELETE);
@@ -214,6 +215,14 @@ select_or_deselect_all :: () {
     mode := false;
     for app.entities if it.is_selected mode = true;
     for app.entities    it.is_selected = !mode;
+}
+
+toggle_current_selection_if_visible :: () {
+    for app.entities {
+        if it.is_visible {
+            it.is_selected = !it.is_selected;
+        }
+    }
 }
 
 toggle_current_selection :: () {
