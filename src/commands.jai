@@ -83,7 +83,8 @@ offset :: (geometry_index : int, offset_radius : float) {
     it := app.entities[geometry_index];
 
     if it.type != .POLYLINE_SOUP2 {
-        console_add_log("[error] offset not supported for entity type %", it.type);
+        yet := ifx it.type == .POLYGON_SOUP then " yet " else " ";
+        console_add_log("[error] offset not%supported for entity type %", yet, it.type);
         return; // @Incomplete support polygons
     }
 

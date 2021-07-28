@@ -75,27 +75,49 @@ console_execute_command :: (_command : string) {
     // @TODO Allow nested function calls?
     command_name : string;
     command_args : [..]Any;
+    // @Refactor Not a good way of handling signed numbers!!!!
+    // @Incomplete issue error when strings are negated etc
+    sign := 1;
     while !p.failed {
         tok := peek_token(*p);
         if tok.type == .EOF {
             break;
         } else if tok.type == .IDENTIFIER {
+            if sign < 0 {
+                p.failed = true;
+                console_add_log("[error] When parsing '%' : Unexpected preceeding - token.", _command);
+            }
             command_name = tok.string_value;
+            eat_token(*p);
+        } else if tok.type == .SQSTRING || tok.type == .DQSTRING {
+            if sign < 0 {
+                p.failed = true;
+                console_add_log("[error] When parsing '%' : Unexpected preceeding - token.", _command);
+            }
+            array_add(*command_args, copy_any(tok.string_value));
+            eat_token(*p);
+        } else if tok.type == xx #char "-" {
+            sign = -1;
             eat_token(*p);
         } else if tok.type == .INTEGER {
             // @TODO Consider adding entity type with literal #NNN
-            array_add(*command_args, copy_any(tok.integer_value));
+            array_add(*command_args, copy_any(sign * tok.integer_value));
+            sign = 1;
             eat_token(*p);
         } else if tok.type == .FLOAT {
-            array_add(*command_args, copy_any(tok.float_value));
-            eat_token(*p);
-        } else if tok.type == .SQSTRING || tok.type == .DQSTRING {
-            array_add(*command_args, copy_any(tok.string_value));
+            array_add(*command_args, copy_any(sign * tok.float_value));
+            sign = 1;
             eat_token(*p);
         } else {
+            // @Cleanup Use parser.jai error function with custom logger which prints to the console
+            p.failed = true;
             console_add_log("[error] When parsing '%' : Unexpected token %.", _command, to_string(tok));
             return;
         }
+    }
+
+    if p.failed {
+        return;
     }
 
     found_command := false;
