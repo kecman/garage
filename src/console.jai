@@ -1,5 +1,6 @@
 Command_Info :: struct {
     name : string;
+    usage : string;
     procedure : ([]Any) -> (); // @Cleanup rename this to front_procedure since its set to the generated front_* procedure
 }
 
@@ -293,6 +294,7 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
                     }
 
                     // List matches
+                    console_clear_log();
                     console_add_log("# Matching commands:");
                     for candidate : candidates {
                         console_add_log("#  %", candidate);

@@ -21,7 +21,7 @@ clear :: () {
 // @Incomplete write usage here too, or write the procedure parameters
 help :: () {
     console_add_log("# Available commands:");
-    for app.console.commands console_add_log("#  %", it.name);
+    for app.console.commands console_add_log("#  %", it.usage);
 } @RegisterCommand
 
 select_if :: (type : Entity_Type) {
@@ -87,15 +87,15 @@ sort_by_point_count :: (ascending : int = 1) { // @Incomplete: allow this to be 
     else           quick_sort(app.entities, compare_descending);
 } @RegisterCommand
 
-clockwise_boundaries :: (geometry_index : int) {
+clockwise_boundaries :: (item_index : int) {
     // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
-    if !check_geometry_index(geometry_index) {
+    if !check_geometry_index(item_index) {
         return;
     }
 
 #if ENABLE_BOOST_POLYGON {
 
-    it := app.entities[geometry_index];
+    it := app.entities[item_index];
 
     if it.type != .POLYGON_SOUP {
         console_add_log("[error] clockwise_boundaries not supported for entity type %", it.type);
@@ -125,17 +125,17 @@ clockwise_boundaries :: (geometry_index : int) {
 }
 } @RegisterCommand
 
-offset :: (geometry_index : int, offset_radius : float) {
+offset :: (item_index : int, radius : float) {
 #if ENABLE_BOOST_POLYGON {
 
     // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
-    if !check_geometry_index(geometry_index) {
+    if !check_geometry_index(item_index) {
         return;
     }
 
     // @CompilerBug I don't see the entities global in gdb here?? This is probably fixed (according to the Jai changelog, need to verify)
 
-    it := app.entities[geometry_index];
+    it := app.entities[item_index];
 
     if it.type != .POLYLINE_SOUP2 {
         yet := ifx it.type == .POLYGON_SOUP then " yet " else " ";
@@ -143,12 +143,12 @@ offset :: (geometry_index : int, offset_radius : float) {
         return; // @Incomplete support polygons
     }
 
-    console_add_log("# offsetting % by % and returning boundaries", geometry_index, offset_radius);
+    console_add_log("# offsetting % by % and returning boundaries", item_index, radius);
 
     polyline_soup2_entity := cast(*Polyline_Soup2_Entity) it;
 
     #import "BoostPolygon";
-    offset_polygon := BoostPolygon.offset(*polyline_soup2_entity.shape, offset_radius);
+    offset_polygon := BoostPolygon.offset(*polyline_soup2_entity.shape, radius);
     if offset_polygon.polygons.count == 0 {
         console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
         return;

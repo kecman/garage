@@ -147,19 +147,51 @@ generate_code_to_register_console_commands :: (w : Workspace) {
     // Sort commands by name so that help lists them in alphabetic order
     quick_sort(registered_console_commands, (a,b) => (compare_strings(a.name, b.name)));
 
+    max_padding : string;
+    {
+        longest_command_name : int;
+        for registered_console_commands {
+            longest_command_name = max(longest_command_name, it.name.count);
+        }
+        while longest_command_name != 0 {
+            max_padding = tprint("% ", max_padding);
+            longest_command_name -= 1;
+        }
+    }
+
     // Generate init_commands function
     Print("init_commands :: () {\n");
-    for registered_console_commands {
-        path := it.enclosing_load.fully_pathed_filename;
+    for command, command_index : registered_console_commands {
+        path := command.enclosing_load.fully_pathed_filename;
 
-        if it.returns.count != 0 {
-            compiler_report(path, it.l0, it.c0, tprint("Console commands must have 0 return values, got %", it.returns.count));
+        if command.returns.count != 0 {
+            compiler_report(path, command.l0, command.c0, tprint("Console commands must have 0 return values, got %", command.returns.count));
+        }
+
+        usage : string;
+        {
+            usage_builder : String_Builder;
+            print_to_builder(*usage_builder, "%  XXX_PADDING_XXX", command.name);
+            defer free_buffers(*usage_builder);
+            for arg, arg_index : command.arguments {
+                decl := cast(*Code_Declaration) arg.expression;
+                print_expression(*usage_builder, arg);
+                print_to_builder(*usage_builder, "  ");
+            }
+
+            padding := max_padding;
+            padding.count -= command.name.count;
+            usage = builder_to_string(*usage_builder);
+            usage = replace(usage, ": ", ":");
+            usage = replace(usage, " = ", "=");
+            usage = replace(usage, "XXX_PADDING_XXX", padding);
         }
 
         Print("    {\n");
         Print("        info : Command_Info;\n");
-        Print("        info.name = \"%\";\n", it.name);
-        Print("        info.procedure = %_boiler_plate;\n", it.name);
+        Print("        info.name = \"%\";\n", command.name);
+        Print("        info.usage = \"%\";\n", usage);
+        Print("        info.procedure = %_boiler_plate;\n", command.name);
         Print("        array_add(*app.console.commands, info);\n");
         Print("    }\n");
     }
@@ -273,5 +305,6 @@ generate_code_to_register_console_commands :: (w : Workspace) {
 #import "Basic";
 #import "Check";
 #import "Compiler";
+#import "Program_Print";
 #import "Sort";
 #import "String";
