@@ -1,5 +1,7 @@
 ## Version: v0.1.3, Unreleased
 
+- Added support for registering console commands by adding @RegisterCommand
+  - Commands must have 0 return values and the arguments types must have type int/float/string
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON
 - Fixed a UX issue so only the specific color channels that were changed get updated, this makes it possible to bulk change item opacity without also setting them to all have the same color

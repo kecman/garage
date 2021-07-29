@@ -1,6 +1,7 @@
 #import "Basic";
-#import "Compiler";
 #import "Check";
+#import "Compiler";
+#import "Sort";
 #import "String";
 
 build :: () {
@@ -80,10 +81,148 @@ build :: () {
             message := compiler_wait_for_message();
             if !message                  continue;
             if message.workspace != w    continue;
-            if message.kind == .COMPLETE break;
+
             do_error_checking(message);
+
+            has_note :: (header: *Code_Procedure_Header, note: string) -> bool {
+                for header.notes  if it.text == note  return true;
+                return false;
+            }
+
+            if message.kind == {
+                case .TYPECHECKED;
+                  typechecked := cast(*Message_Typechecked) message;
+
+                  for tc: typechecked.procedure_headers {
+                      header := tc.expression;
+                      if has_note(header, "RegisterCommand") {
+                          array_add(*registered_console_commands, header);
+                      }
+                  }
+
+                case .PHASE;
+                    phase := cast(*Message_Phase) message;
+                    if phase.phase == .TYPECHECKED_ALL_WE_CAN {
+                        if !generated_code {
+                            generate_code_to_register_console_commands(message.workspace);
+                            generated_code = true;
+                        }
+                    }
+
+                case .COMPLETE;
+                    break;
+            }
         }
     }
+}
+
+generated_code := false;
+registered_console_commands : [..]*Code_Procedure_Header;
+
+// @Incomplete error on pointers
+// @Incomplete support optional arguments
+// @Incomplete detect and error on overflow
+generate_code_to_register_console_commands :: (w : Workspace) {
+
+    Print :: (format_string : string, args : ..Any) #expand {
+        print_to_builder(*builder, format_string, ..args);
+    }
+
+    builder: String_Builder;
+    defer free_buffers(*builder);
+
+    // Sort commands by name so that help lists them in alphabetic order
+    quick_sort(registered_console_commands, (a,b) => (compare_strings(a.name, b.name)));
+
+    Print("init_commands :: () {\n");
+    for registered_console_commands {
+        path := it.enclosing_load.fully_pathed_filename;
+
+        if it.returns.count != 0 {
+            compiler_report(path, it.l0, it.c0, tprint("Console commands must have 0 return values, got %", it.returns.count));
+        }
+
+        Print("    {\n");
+        Print("        info : Command_Info;\n");
+        Print("        info.name = \"%\";\n", it.name);
+        Print("        info.procedure = %_boiler_plate;\n", it.name);
+        Print("        array_add(*app.console.commands, info);\n");
+        Print("    }\n");
+    }
+    Print("}\n\n");
+
+    for command, command_index : registered_console_commands {
+        path := command.enclosing_load.fully_pathed_filename;
+
+        Print("%_boiler_plate :: (args : []Any) {\n", command.name);
+        Print("    if args.count != % {\n", command.arguments.count);
+        plural : string = ifx command.arguments.count == 1 then "" else "s";
+        Print("        console_add_log(\"[error] expected % argument%, got %%.\", args.count);\n", command.arguments.count, plural);
+        Print("        return;\n");
+        Print("    }\n\n");
+
+        // Argument typechecking
+        for arg, arg_index : command.arguments {
+
+            if arg.type.type == {
+                case .INTEGER;
+                    Print("    if args[%].type.type != .INTEGER {\n", arg_index);
+                    Print("        console_add_log(\"[error] argument % is not an int\");\n", arg_index);
+                    Print("        return;\n");
+                    Print("    }\n");
+                case .FLOAT;
+                    Print("    if args[%1].type.type != .FLOAT || args[%1].type.type != .INTEGER {\n", arg_index);
+                    Print("        console_add_log(\"[error] argument % is not a float (or int)\");\n", arg_index);
+                    Print("        return;\n");
+                    Print("    }\n");
+                case .STRING;
+                    Print("    if args[%].type.type != .STRING {\n", arg_index);
+                    Print("        console_add_log(\"[error] argument % is not an string\");\n", arg_index);
+                    Print("        return;\n");
+                    Print("    }\n");
+                case;
+                    compiler_report(path, arg.l0, arg.c0, tprint("Unsupported console command argument type %, only int/float/string are supported.", arg.type.type));
+            }
+
+            Print("\n");
+        }
+
+        // Assign values to arguments
+        for arg, arg_index : command.arguments {
+
+            if arg.type.type == {
+                case .INTEGER;
+                    Print("    a%1 : int = ---;\n", arg_index);
+                    Print("    a%1 = xx <<cast(*s64)(args[%1].value_pointer);\n", arg_index);
+                case .FLOAT;
+                    Print("    a%1 : float = ---;\n", arg_index);
+                    Print("    if args[%1].type.type != .FLOAT {\n", arg_index);
+                    Print("        a%1 = xx <<cast(*float64)(args[%1].value_pointer);\n", arg_index);
+                    Print("    } else if args[%1].type.type != .INTEGER {\n", arg_index);
+                    Print("        a%1 = xx <<cast(*s64)(args[%1].value_pointer);\n", arg_index);
+                    Print("    }\n");
+                case .STRING;
+                    Print("    a%1 : string = ---;\n", arg_index);
+                    Print("    a%1 = xx <<cast(*string)(args[%1].value_pointer);\n", arg_index);
+                case;
+                    compiler_report(path, arg.l0, arg.c0, tprint("Unsupported console command argument type %, only int/float/string are supported.", arg.type.type));
+            }
+
+            Print("\n");
+        }
+
+
+        // Call the function
+        Print("    %(", command.name);
+        for arg, arg_index : command.arguments {
+            comma := ifx arg_index != command.arguments.count - 1 then ", " else "";
+            Print("a%1%", arg_index, comma);
+        }
+        Print(");\n");
+        Print("}\n\n");
+    }
+
+    add_build_string(builder_to_string(*builder), w);
 }
 
 #run build();

@@ -1,39 +1,37 @@
-issued_error := false;
-
-check_geometry_index :: (index : int) {
+check_geometry_index :: (index : int) -> bool #must {
     if index < 0 || index >= app.entities.count {
         console_add_log("[error] invalid/out of range geometry index");
-        issued_error = true;
+        return false;
     }
+    return true;
 }
 
-command_quit :: () {
+quit :: () {
     app.closing_application = true;
-} @ConsoleCommand
+} @RegisterCommand
 
-command_history :: () {
+history :: () {
     for app.console.history {
         console_add_log("# % %", it_index, it);
     }
-} @ConsoleCommand
+} @RegisterCommand
 
-command_clear :: () {
+clear :: () {
     console_clear_log();
-} @ConsoleCommand
+} @RegisterCommand
 
-command_help :: () {
+help :: () {
     console_add_log("# Available commands:");
     for app.console.commands {
         console_add_log("#  %", it.name); // @Incomplete write usage here too, or write the procedure parameters
     }
-} @ConsoleCommand
+} @RegisterCommand
 
-// @Incomplete Separate into boiler plate and an actual command (with @ConsoleCommand note)
+// @Incomplete Separate into boiler plate and an actual command (with @RegisterCommand note)
 clockwise_boundaries :: (geometry_index : int) {
-    {
-        // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
-        check_geometry_index(geometry_index);
-        if issued_error return;
+    // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
+    if !check_geometry_index(geometry_index) {
+        return;
     }
 
 #if ENABLE_BOOST_POLYGON {
@@ -67,15 +65,14 @@ clockwise_boundaries :: (geometry_index : int) {
     log("Feature unavailable: compile with 'boost_on'\n");
     return;
 }
-} @ConsoleCommand
+} @RegisterCommand
 
 offset :: (geometry_index : int, offset_radius : float) {
 #if ENABLE_BOOST_POLYGON {
 
-    {
-        // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
-        check_geometry_index(geometry_index);
-        if issued_error return;
+    // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
+    if !check_geometry_index(geometry_index) {
+        return;
     }
 
     // @CompilerBug I don't see the entities global in gdb here?? This is probably fixed (according to the Jai changelog, need to verify)
@@ -111,144 +108,4 @@ offset :: (geometry_index : int, offset_radius : float) {
     log("Feature unavailable: compile with 'boost_on'\n");
     return;
 }
-} @ConsoleCommand
-
-// @Incomplete generate this with metaprogram
-init_commands :: () {
-    {
-        info : Command_Info;
-        info.name = "offset";
-        info.procedure = command_offset_boiler_plate;
-        array_add(*app.console.commands, info);
-    }
-
-    {
-        info : Command_Info;
-        info.name = "clockwise_boundaries";
-        info.procedure = command_clockwise_boundaries_boiler_plate;
-        array_add(*app.console.commands, info);
-    }
-
-    {
-        info : Command_Info;
-        info.name = "history";
-        info.procedure = command_history_boiler_plate;
-        array_add(*app.console.commands, info);
-    }
-
-    {
-        info : Command_Info;
-        info.name = "clear";
-        info.procedure = command_clear_boiler_plate;
-        array_add(*app.console.commands, info);
-    }
-
-    {
-        info := array_add(*app.console.commands);
-        info.name = "help";
-        info.procedure = command_help_boiler_plate;
-    }
-
-    {
-        info := array_add(*app.console.commands);
-        info.name = "quit";
-        info.procedure = command_quit_boiler_plate;
-    }
-}
-
-// @Incomplete generate boiler plate functions via metaprogram
-
-command_history_boiler_plate :: (args : []Any) {
-    if args.count != 0 {
-        console_add_log("[error] expected no arguments");
-        return;
-    }
-
-    if issued_error return;
-
-    command_history();
-}
-
-command_clear_boiler_plate :: (args : []Any) {
-    if args.count != 0 {
-        console_add_log("[error] expected no arguments");
-        return;
-    }
-
-    if issued_error return;
-
-    command_clear();
-}
-
-command_quit_boiler_plate :: (args : []Any) {
-    if args.count != 0 {
-        console_add_log("[error] expected no arguments");
-        return;
-    }
-
-    if issued_error return;
-
-    command_quit();
-}
-
-command_help_boiler_plate :: (args : []Any) {
-    if args.count != 0 {
-        console_add_log("[error] expected no arguments");
-        return;
-    }
-
-    if issued_error return;
-
-    command_help();
-}
-
-command_clockwise_boundaries_boiler_plate :: (args : []Any) {
-    if args.count != 1 {
-        console_add_log("[error] expected exactly 1 argument");
-        issued_error = true;
-        return;
-    }
-
-    if args[0].type.type != .INTEGER {
-        console_add_log("[error] first argument is not an int");
-        issued_error = true;
-        return;
-    }
-
-    if issued_error return;
-
-    // @Incomplete: add asserts to check the runtime size of the integer
-    a0 : int = <<cast(*s64)(args[0].value_pointer);
-    clockwise_boundaries(a0);
-}
-
-command_offset_boiler_plate :: (args : []Any) {
-    if args.count != 2 {
-        console_add_log("[error] expected exactly 2 arguments");
-        return;
-    }
-
-    if args[0].type.type != .INTEGER {
-        console_add_log("[error] argument 1 is not an int");
-        issued_error = true;
-        return;
-    }
-
-    if args[1].type.type != .FLOAT && args[1].type.type != .INTEGER {
-        console_add_log("[error] argument 2 is not a number, its a %.", args[1].type.type);
-        issued_error = true;
-        return;
-    }
-
-    if issued_error return;
-
-    a0 : int = xx <<cast(*s64)(args[0].value_pointer);
-    a1 : float = ---;
-    if args[1].type.type == .FLOAT {
-        a1 = xx << cast(*float64) args[1].value_pointer;
-    } else if  args[1].type.type == .INTEGER {
-        a1 = xx << cast(*s64) args[1].value_pointer;
-    }
-
-    offset(a0, a1);
-}
+} @RegisterCommand
