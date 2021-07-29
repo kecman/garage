@@ -151,6 +151,7 @@ to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
 
     return result, true;
 } else {
+    log("Unable to triangulate polygon: compile with 'boost_on'\n");
     return result, false;
 }
 }

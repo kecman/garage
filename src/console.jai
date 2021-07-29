@@ -71,7 +71,6 @@ console_execute_command :: (_command : string) {
         return any;
     }
 
-
     // @TODO Allow nested function calls?
     command_name : string;
     command_args : [..]Any;
@@ -133,8 +132,8 @@ console_execute_command :: (_command : string) {
         }
     }
 
-    if !found_command {
-        console_add_log("# '%' : Command not found", command_name);
+    if command_name != "" && !found_command {
+        console_add_log("[error] '%' : Command not found", command_name);
     }
 }
 

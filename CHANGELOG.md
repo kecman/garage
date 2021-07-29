@@ -3,6 +3,7 @@
 - Added ability to register console commands by adding a @RegisterCommand note to procedures
   - Commands are checked to ensure they have 0 return values
   - Commands are checked to ensure all arguments have type int, float or string
+- `help` command now lists registered console commands in alphabetical order
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON
 - Fixed a UX issue so only the specific color channels that were changed get updated, this makes it possible to bulk change item opacity without also setting them to all have the same color

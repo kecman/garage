@@ -35,6 +35,39 @@ select_if_Polyline_Soup3 :: () { select_if(.POLYLINE_SOUP3); } @RegisterCommand
 select_if_Polygon_Soup   :: () { select_if(.POLYGON_SOUP);   } @RegisterCommand
 select_if_Mesh           :: () { select_if(.MESH);           } @RegisterCommand
 
+sort_by_name :: (alphabetical : int = 1) { // @Incomplete: allow this to be a boolean!
+    compare_alphabetical :: (a : *Entity, b : *Entity) -> s64 {
+        return compare_strings(a.fully_pathed_filename, b.fully_pathed_filename);
+    }
+
+    compare_reverse_alphabetical :: (a : *Entity, b : *Entity) -> s64 {
+        return compare_strings(b.fully_pathed_filename, a.fully_pathed_filename);
+    }
+
+    if   alphabetical quick_sort(app.entities, compare_alphabetical);
+    else              quick_sort(app.entities, compare_reverse_alphabetical);
+} @RegisterCommand
+
+// @Cleanup This is a pretty weird way to do this...
+sort_by_load_time :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
+    compare_ascending :: (a : *Entity, b : *Entity) -> s64 {
+        at := filetime_to_readable_date(a.loaded_filetime);
+        bt := filetime_to_readable_date(b.loaded_filetime);
+        if at == bt return compare_strings(b.fully_pathed_filename, a.fully_pathed_filename);
+        return compare_strings(bt, at);
+    }
+
+    compare_descending :: (a : *Entity, b : *Entity) -> s64 {
+        at := filetime_to_readable_date(a.loaded_filetime);
+        bt := filetime_to_readable_date(b.loaded_filetime);
+        if at == bt return compare_strings(a.fully_pathed_filename, b.fully_pathed_filename);
+        return compare_strings(at, bt);
+    }
+
+    if   ascending quick_sort(app.entities, compare_ascending);
+    else           quick_sort(app.entities, compare_descending);
+} @RegisterCommand
+
 sort_by_point_count :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
     compare_ascending :: (a : *Entity, b : *Entity) -> s64 {
         if a.mesh.positions.count == b.mesh.positions.count {
@@ -66,7 +99,6 @@ clockwise_boundaries :: (geometry_index : int) {
 
     if it.type != .POLYGON_SOUP {
         console_add_log("[error] clockwise_boundaries not supported for entity type %", it.type);
-        issued_error = true;
         return;
     }
 
@@ -88,7 +120,7 @@ clockwise_boundaries :: (geometry_index : int) {
 
     array_add(*app.entities, entity);
 } else {
-    log("Feature unavailable: compile with 'boost_on'\n");
+    console_add_log("[error] Feature unavailable: compile with 'boost_on'\n");
     return;
 }
 } @RegisterCommand
@@ -131,7 +163,7 @@ offset :: (geometry_index : int, offset_radius : float) {
 
     array_add(*app.entities, entity);
 } else {
-    log("Feature unavailable: compile with 'boost_on'\n");
+    console_add_log("[error] Feature unavailable: compile with 'boost_on'\n");
     return;
 }
 } @RegisterCommand

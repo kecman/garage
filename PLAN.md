@@ -1,15 +1,24 @@
 ## Next Release
 
+- [Bug,UI/UX] Enable the Ctrl-` keybinding to toggle the console when it's open, so we don't need to click away from the console to use it. Note the other keybindings should NOT be enabled in the console.
+- [Bug] Fix Camera unable to rotate when you focus on the point.wkt item
+- [Bug] Fix item_Wire_Mesh.obj not reporting the correct number of points/polylines in the item context menu.
+- [Bug] When you load a polyline obj at z!=0 the text is not rendered at the right z coordinate (Maybe fixed now)
+- [UI/UX] File load/reload should not skip empty files, the filenames could dim when the reload causes the file to become empty (IMPORTANT)
+- [UI/UX,Commands] Add usage to the commands in the terminal
+- [UI/UX] Make more reasonable UI for changing transparency (and have commands that can set it)
+- [UI/UX] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
+- [Geometry] Add support for Polygon3
+
+## Backlog
+
+- [DevX] Do an audit/cleanup of the code to make it more hackable by other people
+- [Bug] Fix the x64 build
 - [Bug] Fix the labels appearing outside the clipping box
 - [Bug] When loading a file that doesn't exist the text file handler reports unable to load file (good) but the obj loader also reports empty vertices (bad, to be fixed)
-- [Commands] Add a syntax for specifying what command to run when the app starts
-- [Commands] Command to select/sort items by type, size, filename etc
-- [Commands] Command to compute parameterisation?
 - [UI/UX] Sweep drag improvements
   - have a cooldown rather than just toggling off on exit
   - make it work with scroll wheel in a long item list, does it work already?
-- [UI/UX] File reload should not skip empty files, the filenames could dim when the reload causes the file to become empty
-- [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 - [UI/UX] Add some options for backface shading, including an obnoxiously visible one for finding holes in meshes
 - [UI/UX] Fix issue where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
@@ -17,13 +26,18 @@
 - [UI/UX] Make long lists of items managable in the context menu
 - [UI/UX] Improve camera panning
 - [UI/UX] Make normals clip
-
-## Backlog
-
+- [UI/UX,Rendering] Add an option not to render backfacing triangles of transparent items
+- [Distribution] Document goals/values in the README.md
 - [UI/UX] Clipping improvements
   - Add plane visualisation, maybe also intersecting the planes
   - Add option to make the clipped geometry render with non-zero opacity
   - Make LMB be the only one to close popups, so you can rotate the view while a popup is open
+  - Better UX for the clipping
+    - Pick some distance computation e.g., distance from a plane, or distance from a point (euclidean distance == spherical clipping, manhattan distance == cube clipping)
+    - Define the primitive for distance computation e.g., imgui drag float widgets for coeffs in a plane/coordinates of a point, or set via selecting something in the scene.
+    - Pick some clipping criterion e.g., dist > value, or min < dist < max
+    - Ex1: Sphere/Cube clipping using a sphere/cube around a selected point might be handy to look at something inside a hole
+    - Ex2: Plane clipping using a plane though three selected points would be handy to look at infill paths
 - [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [Rendering] Render aabbs when the box extents are hovered in the UI
@@ -51,6 +65,12 @@
 - [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] :UserConfig Hotload user configurable parameters
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
+- [Commands] Add a syntax for specifying what command to run when the app starts
+- [Commands] Command to select/sort items by type, geometric extent, size, number of points/faces, filename etc
+- [Commands] Command to group items by matching wildcard, maybe groups are numbered/lettered so #f.42 is item 42 in group f?
+- [Commands] Command to compute parameterisation?
+- [Commands] Command to compute an animation?
+- [Commands] Command to simplify, and show ui with parameters for the simplification
 - [Commands] save_obj <filename> <optional-element-index-list>
 - [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
 - [UI/UX] Mesh element number/segment number rendering
@@ -80,6 +100,7 @@
 - [XXL,UI/UX,Camera] Undo/redo system for camera and other operations
 - [UI/UX,Camera] Camera position history/bookmarks with notes/annotations
 - [Rendering] Render vertex labels on top of other geometry always
+- [Rendering] Add option to render element labels
 - [UI/UX] Write * to indicate an identical first and last point
 - [UI/UX] Sweep drag for removing items from the scene?
 - [UI/UX] Click to copy point coordinate in {1.8e} format so that it can be used as a float literal in code
