@@ -1,8 +1,6 @@
 ## Next Release
 
 - [Bug,UI/UX] Enable the Ctrl-` keybinding to toggle the console when it's open, so we don't need to click away from the console to use it. Note the other keybindings should NOT be enabled in the console.
-- [Bug] Fix Camera unable to rotate when you focus on the point.wkt item
-- [Bug] Fix item_Wire_Mesh.obj not reporting the correct number of points/polylines in the item context menu.
 - [Bug] When you load a polyline obj at z!=0 the text is not rendered at the right z coordinate (Maybe fixed now)
 - [UI/UX] File load/reload should not skip empty files, the filenames could dim when the reload causes the file to become empty (IMPORTANT)
 - [UI/UX,Commands] Add usage to the commands in the terminal
