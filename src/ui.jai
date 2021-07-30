@@ -130,7 +130,9 @@ show_item_list_ui :: () {
             ImGui.Selectable("---", *it.is_selected);
         }
         if ImGui.IsItemClicked() {
-            if !io().KeyCtrl fit_on_screen(it);
+            if !io().KeyCtrl {
+                fit_on_screen(it);
+            }
         }
         was_hovered := it.is_hovered;
         it.is_hovered = ImGui.IsItemHovered();
@@ -380,7 +382,7 @@ show_item_list_ui :: () {
     }
 
     if app.settings.fit_to_screen_on_visibility_change && any_visibility_changed {
-        fit_on_screen();
+        fit_scene_on_screen();
     }
 
     if entity_to_remove >= 0 && entity_to_remove < entities.count {
@@ -888,7 +890,9 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
             } else if previous_frame_hovered && !current_frame_hovered {
                 <<state = false;
             }
-            if io().KeyShift fit_on_screen(); // Also update the camera when shift is pressed
+            if io().KeyShift {
+                fit_scene_on_screen(); // Also update the camera when shift is pressed
+            }
         } else {
             // Update any checkbox intersecting the mouse sweep so none are missed if the mouse is moved a lot in a single frame
             frame_sweep_start, frame_sweep_end := make_Vector2(io().MousePos) - make_Vector2(io().MouseDelta), io().MousePos;

@@ -245,10 +245,12 @@ handle_zoom :: (zoom_factor : float, previous_pos : Vector2, follow_cursor : boo
 }
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
-fit_on_screen :: (accurate : bool = false) {
-    app.camera.scene_bounding_sphere = visible_entities_bounding_sphere(accurate);
-    fit_on_screen(app.camera.scene_bounding_sphere);
+fit_scene_on_screen :: (accurate : bool = false) {
+    sphere := visible_entities_bounding_sphere(accurate);
+    fit_sphere_on_screen(sphere, sphere.radius);
 }
+
+// @Cleanup make an entity_bounding_sphere function
 
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
 fit_on_screen :: (entity : *Entity, accurate : bool = false)
@@ -257,36 +259,37 @@ fit_on_screen :: (entity : *Entity, accurate : bool = false)
         return;
     }
 
-    // Place orthographic planes to fit the scene
-    fit_on_screen(accurate);
-
-    // Update the camera to look at the entity only
-    look_direction := current_look_direction();
     sphere := entity.render_info.bounding_sphere;
     transform(*sphere, entity.mesh.world_from_model);
-    app.camera.look_position = sphere.center;
-    app.camera.eye_position = app.camera.look_position - normalize(look_direction) * sphere.radius;
-    app.camera.top    = sphere.radius;
-    app.camera.right  = current_window_aspect_ratio_width_over_height() * sphere.radius;
-    app.camera.bottom = -app.camera.top;
-    app.camera.left   = -app.camera.right;
+    scene_sphere := visible_entities_bounding_sphere(accurate);
+    sphere.radius += distance(sphere.center, scene_sphere.center);
+
+    look_length := dot_product(unit_vector(current_look_direction()), sphere.center - app.camera.eye_position);
+
+    fit_sphere_on_screen(sphere, look_length);
 }
 
 // Adjust the camera position and viewing volume to fit the world space sphere while preserving the camera look direction
-fit_on_screen :: (sphere : Sphere)
-{
-    if sphere.radius == 0. {
-        init_camera(); // Reset to initial view
-        return;
+fit_sphere_on_screen :: (_sphere : Sphere, look_length : float) {
+    sphere := _sphere;
+
+    if sphere.radius <= 0. {
+        sphere.radius = 1.;
     }
+
+    if look_length == 0. {
+        look_length = 1.;
+    }
+
+    app.camera.scene_bounding_sphere = sphere;
 
     look_direction := current_look_direction();
     app.camera.look_position = sphere.center;
-    app.camera.eye_position = app.camera.look_position - normalize(look_direction) * sphere.radius;
-    app.camera.far    = sphere.radius * 2;
+    app.camera.eye_position = app.camera.look_position - normalize_or_z_axis(look_direction) * look_length;
+    app.camera.far    = distance(app.camera.look_position, app.camera.eye_position) + sphere.radius * 2;
     app.camera.top    = sphere.radius;
     app.camera.right  = current_window_aspect_ratio_width_over_height() * sphere.radius;
-    app.camera.near   = -app.camera.far;
+    app.camera.near   = distance(app.camera.look_position, app.camera.eye_position) - sphere.radius * 2;
     app.camera.bottom = -app.camera.top;
     app.camera.left   = -app.camera.right;
 
@@ -396,10 +399,10 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
         sphere := info.bounding_sphere;
         transform(*sphere, mesh.world_from_model);
         if first_entity {
-            `result = sphere;
-            `first_entity = false;
+            result = sphere;
+            first_entity = false;
         } else {
-            expand(*`result, sphere);
+            expand(*result, sphere);
         }
     }
 

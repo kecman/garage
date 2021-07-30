@@ -118,7 +118,7 @@ init_keymap :: ()
 // Bindable procedures
 //
 
-call_fit_on_screen             :: () { fit_on_screen(); } // @CompilerBug? why do we need this wrapper
+call_fit_on_screen             :: () { fit_scene_on_screen(); } // @CompilerBug? why do we need this wrapper
 close_application              :: () { app.closing_application = true; }
 toggle_show_ui                 :: () { app.show_ui = !app.show_ui; }
 toggle_show_global_settings_ui :: () { app.show_global_settings_ui = !app.show_global_settings_ui; }

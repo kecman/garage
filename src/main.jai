@@ -247,7 +247,7 @@ load_from_command_line :: () {
             load_one_file(args[it]);
         }
     }
-    fit_on_screen();
+    fit_scene_on_screen();
 }
 
 handle_events :: () {
@@ -350,7 +350,7 @@ handle_events :: () {
                 }
 
                 if app.settings.fit_to_screen_on_file_drop_event {
-                    fit_on_screen();
+                    fit_scene_on_screen();
                 }
             }
         }
