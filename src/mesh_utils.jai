@@ -1,11 +1,6 @@
 
 to_Mesh :: (shape : $T/Polyline_Soup) -> Mesh, bool #must {
     mesh : Mesh;
-
-    if is_empty(shape) {
-        return mesh, false;
-    }
-
     mesh.geometry_format = .LINES;
 
     index_offset := 0;
@@ -45,21 +40,36 @@ to_Polyline_Soup3 :: #bake_arguments to_Polyline_Soup(Point = Vector3);
 
 to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #must {
     result : Polyline_Soup(Point);
+    ok : bool;
 
-    if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.positions.count == 0 {
+    if mesh.geometry_format != .LINES {
         return result, false;
     }
 
-    get_edge :: (mesh : Mesh, edge_index : int) -> Indexed_Edge3 {
-        assert(2 * edge_index + 1 < mesh.indices.count);
+    if mesh.indices.count < 2 || mesh.positions.count == 0 {
+        return result, true;
+    }
 
+    get_edge :: (mesh : Mesh, edge_index : int) -> Indexed_Edge3, bool #must {
         edge : Indexed_Edge3;
+
+        NI := mesh.indices.count;
+        if 2 * edge_index >= NI {
+            return edge, false;
+        }
+
         edge.from_index = mesh.indices[2 * edge_index];
         edge.to_index   = mesh.indices[2 * edge_index + 1];
+
+        NP := mesh.positions.count;
+        if (edge.from_index >= NP) || (edge.to_index >= NP) {
+            return edge, false;
+        }
+
         edge.from_point = *mesh.positions[edge.from_index];
         edge.to_point   = *mesh.positions[edge.to_index];
 
-        return edge;
+        return edge, true;
     }
 
     get_point :: inline (point : Vector3) -> Point {
@@ -73,7 +83,9 @@ to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #
     edge_count := mesh.indices.count / 2;
 
     edge_index := 0;
-    edge := get_edge(mesh, edge_index);
+    edge : Indexed_Edge3;
+    edge, ok = get_edge(mesh, edge_index);
+    if !ok return result, false;
 
     // Start a new polyline
     polyline := array_add(*result.polylines);
@@ -88,7 +100,8 @@ to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #
             break;
         }
 
-        edge = get_edge(mesh, edge_index);
+        edge, ok = get_edge(mesh, edge_index);
+        if !ok return result, false;
 
         if edge.from_index == prev_edge.to_index {
             // Add to current polyline
@@ -113,7 +126,7 @@ to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
     result : Mesh;
 
     if shape.polygons.count == 0 {
-        return result, false;
+        return result, true;
     }
 
 #if ENABLE_BOOST_POLYGON {
@@ -156,17 +169,7 @@ to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
 }
 }
 
-// @TODO only really needed to load polygon objs, but we should just do that with wkt files instead
-to_Polygon_Soup :: (mesh : Mesh) -> Polygon_Soup, bool #must {
-    result : Polygon_Soup;
-    // make each triangle into a polygon
-    // boolean union triangles? (this should be a parameter)
-    // not very nice at all but I guess it works
-    return result, false;
-}
-
-to_Mesh :: (m : par_shapes_mesh) -> Mesh
-{
+to_Mesh :: (m : par_shapes_mesh) -> Mesh {
     using result : Mesh;
 
     geometry_format = .TRIANGLES;

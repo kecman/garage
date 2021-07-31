@@ -89,6 +89,10 @@ deinit :: (base : *Entity) {
     free(base.fully_pathed_filename);
 }
 
+is_empty :: (entity : Entity) -> bool {
+    return entity.mesh.positions.count == 0;
+}
+
 entity_primary_color :: (using entity : *Entity) -> *Vector4 {
     if #complete type == {
         case .UNKNOWN;

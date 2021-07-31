@@ -139,7 +139,6 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 #import "Deep_Copy";
 #import "Time";
 #import "Text_File_Handler";
-#import "Tagged_Union"(DEBUG = true);
 #import "Hash";
 #import "Hash_Table";
 #import "freetype255";

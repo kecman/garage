@@ -39,19 +39,13 @@ load_wkt :: (filename : string) -> *Entity {
             expect_and_eat(*parser, xx #char ")");
 
             if parser.failed {
-
                 break;
-
             } else if dim == 2 {
-
                 array_add(*entity.mesh.positions, make_vector3(point2, 0));
-
-            } else {
-
-                assert(dim == 3);
-
+            } else if dim == 3 {
                 array_add(*entity.mesh.positions, point3);
-
+            } else {
+                assert(false, "Unreachable, we should have set parser failure in this case!");
             }
 
         } else if eat_possible_directive(*parser, "MULTIPOINT") {
@@ -59,52 +53,58 @@ load_wkt :: (filename : string) -> *Entity {
             entity = New(Mesh_Entity);
             entity.mesh.geometry_format = .POINTS;
 
-            points := parse_points(*parser);
+            points2 : [..]Vector2;
+            points3 : [..]Vector3;
+            dim := parse_points(*parser, *points2, *points3);
 
             if parser.failed {
-
                 break;
-
-            } else if points.tag == [..]Vector2 {
-
-                for <<isa(points, [..]Vector2) {
-                    array_add(*entity.mesh.positions, make_vector3(it, 0));
-                }
-
+            } else if dim == 0 {
+                break; // empty point cloud
+            } else if dim == 2 {
+                for points2 array_add(*entity.mesh.positions, make_vector3(it, 0));
+            } else if dim == 3 {
+                entity.mesh.positions = points3;
             } else {
-
-                assert(points.tag == [..]Vector3);
-
-                entity.mesh.positions = <<isa(points, [..]Vector3);
-
+                assert(false, "Unreachable, we should have set parser failure in this case!");
             }
 
         } else if eat_possible_directive(*parser, "LINESTRING") {
 
-            points := parse_points(*parser);
+            points2 : [..]Vector2;
+            points3 : [..]Vector3;
+            dim := parse_points(*parser, *points2, *points3);
 
             if parser.failed {
-
                 break;
+            } else if dim == 0 {
 
-            } else if isa(points, [..]Vector2) {
+                empty_shape : Polyline_Soup3;
+                empty_mesh : Mesh;
+                empty_mesh.geometry_format = .LINES;
+                entity = New(Polyline_Soup3_Entity);
+                e : *Polyline_Soup3_Entity = xx entity; // @CompilerBug???????
+                e.shape = empty_shape;
+                e.mesh = empty_mesh;
+
+            } else if dim == 2 {
 
                 entity = New(Polyline_Soup2_Entity); // @CompilerBug???????
                 e : *Polyline_Soup2_Entity = xx entity;
-                array_add(*e.shape.polylines).points = <<isa(points, [..]Vector2);
+                array_add(*e.shape.polylines).points = points2;
+                e.mesh, ok = to_Mesh(e.shape);
+                if !ok parser.failed = true;
+
+            } else if dim == 3 {
+
+                entity = New(Polyline_Soup3_Entity);
+                e : *Polyline_Soup3_Entity = xx entity; // @CompilerBug???????
+                array_add(*e.shape.polylines).points = points3;
                 e.mesh, ok = to_Mesh(e.shape);
                 if !ok parser.failed = true;
 
             } else {
-
-                assert(isa(points, [..]Vector3) != null);
-
-                entity = New(Polyline_Soup3_Entity);
-                e : *Polyline_Soup3_Entity = xx entity; // @CompilerBug???????
-                array_add(*e.shape.polylines).points = <<isa(points, [..]Vector3);
-                e.mesh, ok = to_Mesh(e.shape);
-                if !ok parser.failed = true;
-
+                assert(false, "Unreachable, we should have set parser failure in this case!");
             }
 
         } else if eat_possible_directive(*parser, "MULTILINESTRING") {
@@ -114,7 +114,11 @@ load_wkt :: (filename : string) -> *Entity {
 
             dim := parse_polyline_soup(*parser, *polyline_soup2, *polyline_soup3);
 
-            if dim == 2 {
+            if parser.failed {
+                break;
+            } else if dim == 0 {
+                break; // empty polyline soup
+            } else if dim == 2 {
 
                 entity = New(Polyline_Soup2_Entity);
                 e : *Polyline_Soup2_Entity = xx entity; // @CompilerBug???????
@@ -131,8 +135,7 @@ load_wkt :: (filename : string) -> *Entity {
                 if !ok parser.failed = true;
 
             } else {
-                parser.failed = true;
-                break;
+                assert(false, "Unreachable, we should have set parser failure in this case!");
             }
 
         } else if eat_possible_directive(*parser, "POLYGON") {
@@ -158,10 +161,8 @@ load_wkt :: (filename : string) -> *Entity {
             entity = e;
 
         } else {
-
             error(*parser, peek_token(*parser), "Unexpected token %.\n", to_string(peek_token(*parser)));
             break;
-
         }
     }
 
@@ -188,9 +189,8 @@ parse_point :: (p: *Parser, point2 : *Vector2, point3 : *Vector3, loc := #caller
     dim += xx is_number(peek_ahead(p, 1));
     dim += xx is_number(peek_ahead(p, 2));
 
-    if dim == 0 || dim == 1 {
-        // Empty points e.g., Point(), should not have entered this function since the while loops check for the closing paren
-        error(p, peek_token(p), "Unexpected token %.\n", to_string(peek_token(p)));
+    if dim == 1 {
+        error(p, peek_token(p), "Expected 2D or 3D point, but only got one component %.\n", to_string(peek_token(p)));
     } else if dim == 2 {
         <<point2 = parse_vector2(p);
     } else if dim == 3 {
@@ -200,13 +200,8 @@ parse_point :: (p: *Parser, point2 : *Vector2, point3 : *Vector3, loc := #caller
     return dim;
 }
 
-// @Refactor: Just pass in the container for the 2d/3d points and return which was filled in!
-Parsed_Points :: Tagged_Union([..]Vector2, [..]Vector3);
-
 // Parses and returns an array of 2D or 3D points, or sets p.failed to true
-parse_points :: (p : *Parser, loc := #caller_location) -> Parsed_Points {
-
-    points : Parsed_Points = ---;
+parse_points :: (p : *Parser, points2 : *[..]Vector2, points3 : *[..]Vector3, loc := #caller_location) -> dim : int {
 
     expect_and_eat(p, xx #char "(");
 
@@ -217,28 +212,22 @@ parse_points :: (p : *Parser, loc := #caller_location) -> Parsed_Points {
 
         if p.failed {
             break;
-        } else if dim == 0 || dim == 1{
-            assert(false); // Unreachable since we should have set p.failed in this case!
+        } else if dim == 0 {
+            continue;
         } else if dim == 2 {
-            if points.tag == [..]Vector2 {
-                array_add(isa(points, [..]Vector2), point2);
-            } else if points.tag == [..]Vector3 {
+            if points3.count {
                 error(p, peek_token(p), "Expected 3D point but got a 2D point");
-            } else {
-                points_2d : [..]Vector2;
-                array_add(*points_2d, point2);
-                set(*points, points_2d);
+                break;
             }
+            array_add(points2, point2);
         } else if dim == 3 {
-            if points.tag == [..]Vector3 {
-                array_add(isa(points, [..]Vector3), point3);
-            } else if points.tag == [..]Vector2 {
+            if points2.count {
                 error(p, peek_token(p), "Expected 2D point but got a 3D point");
-            } else {
-                points_3d : [..]Vector3;
-                array_add(*points_3d, point3);
-                set(*points, points_3d);
+                break;
             }
+            array_add(points3, point3);
+        } else {
+            assert(false, "Unreachable, we should have set parser failure in this case!");
         }
 
         eat_possible_token(p, xx #char ",");
@@ -246,40 +235,40 @@ parse_points :: (p : *Parser, loc := #caller_location) -> Parsed_Points {
 
     expect_and_eat(p, xx #char ")");
 
-    return points;
+    if points2.count return 2;
+    if points3.count return 3;
+    return 0;
 }
 
 // Fills in one of the passed polyline soups and returns a dimension to indicate which
 parse_polyline_soup :: (p : *Parser, polyline_soup2 : *Polyline_Soup2, polyline_soup3 : *Polyline_Soup3, loc := #caller_location) -> dim : int {
 
-    dim := -1;
-
     expect_and_eat(p, xx #char "(");
 
     while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
 
-        points := parse_points(p);
+        polyline2 : Polyline2;
+        polyline3 : Polyline3;
+        dim := parse_points(p, *polyline2.points, *polyline3.points);
 
         if p.failed {
             break;
-        } else if points.tag == [..]Vector2 {
-            if dim == 3 {
-                error(p, peek_token(p), "Expected 2D point but got a 3D point");
-            } else {
-                dim = 2;
-                polyline : Polyline2;
-                polyline.points = <<isa(points, [..]Vector2);
-                array_add(*polyline_soup2.polylines, polyline);
+        } else if dim == 0 {
+            continue;
+        } else if dim == 2 {
+            if polyline_soup3.polylines.count {
+                error(p, peek_token(p), "Expected 3D polyline but got a 2D polyline");
+                break;
             }
-        } else if points.tag == [..]Vector3 {
-            if dim == 2 {
-                error(p, peek_token(p), "Expected 3D point but got a 2D point");
-            } else {
-                dim = 3;
-                polyline : Polyline3;
-                polyline.points = <<isa(points, [..]Vector3);
-                array_add(*polyline_soup3.polylines, polyline);
+            array_add(*polyline_soup2.polylines, polyline2);
+        } else if dim == 3 {
+            if polyline_soup2.polylines.count {
+                error(p, peek_token(p), "Expected 2D polyline but got a 3D polyline");
+                break;
             }
+            array_add(*polyline_soup3.polylines, polyline3);
+        } else {
+            assert(false); // Unreachable since we should have set p.failed in this case!
         }
 
         eat_possible_token(p, xx #char ",");
@@ -287,7 +276,9 @@ parse_polyline_soup :: (p : *Parser, polyline_soup2 : *Polyline_Soup2, polyline_
 
     expect_and_eat(p, xx #char ")");
 
-    return dim;
+    if polyline_soup2.polylines.count return 2;
+    if polyline_soup3.polylines.count return 3;
+    return 0;
 }
 
 parse_polygon :: (p : *Parser, loc := #caller_location) -> Polygon {
@@ -300,17 +291,19 @@ parse_polygon :: (p : *Parser, loc := #caller_location) -> Polygon {
 
     while peek_token(p).type != .EOF && peek_token(p).type != xx #char ")" {
 
-        points := parse_points(p);
+        points2 : [..]Vector2;
+        points3 : [..]Vector3;
+        dim := parse_points(p, *points2, *points3);
 
         if p.failed {
             break;
-        } else if points.tag == [..]Vector2 {
+        } else if dim == 2 {
             if is_outer {
                 ring : Ring;
-                ring.points = <<isa(points, [..]Vector2);
+                ring.points = points2;
                 polygon.outer_ring = ring;
             } else {
-                array_add(*polygon.inner_rings).points = <<isa(points, [..]Vector2);
+                array_add(*polygon.inner_rings).points = points2;
             }
         } else {
             error(p, peek_token(p), "Expected 2D points but got 3D points");

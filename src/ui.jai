@@ -114,10 +114,11 @@ show_item_list_ui :: () {
 
             delta_time := get_current_file_time() - it.loaded_filetime;
             FADE_TIME_SECS := 1;
-            color := ImGui.ImVec4.{1, 1, 1, 1};
+            base_color := ifx is_empty(<<it) then Vector4.{.5, .5, .5, 1} else Vector4.{1, 1, 1, 1};
+            color := ImGui.make_ImVec4(base_color.x, base_color.x, base_color.z, base_color.w);
             if delta_time < xx (FADE_TIME_SECS * 10_000_000.) {
                 alpha := clamp(delta_time / (FADE_TIME_SECS * 10_000_000.), 0., 1.);
-                color4 := lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+                color4 := lerp(Vector4.{0, 1, 0, 1}, base_color, alpha);
                 color = ImGui.make_ImVec4(color4.x, color4.y, color4.z, color4.w);
             }
 
@@ -130,7 +131,7 @@ show_item_list_ui :: () {
             ImGui.Selectable("---", *it.is_selected);
         }
         if ImGui.IsItemClicked() {
-            if !io().KeyCtrl {
+            if !io().KeyCtrl && !is_empty(<<it) {
                 fit_on_screen(it);
             }
         }
