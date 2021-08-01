@@ -11,11 +11,13 @@ Using a single space between a name and the ::, : or := makes searching for decl
 
 # Release process
 
+This tool is intended to be hackable and compiled from source as you use it. So it doesn't really make sense to release binaries, however, this is what we do while Jai is in closed beta.
+
 From the top-level project directory do the following:
 
 1. Update `build.jai` with the new version number
 2. Update `CHANGELOG.md` to add the release date
-3. Update `PLAN.md` checking tasks are placed appropriately in the next release/backlog sections
+3. Update `PLAN.md` checking tasks are placed appropriately in the prioritized/backlog sections
 4. Compile using: `jai build.jai -x64 -- release boost_on`
 5. Make a release folder: `mkdir garage-vNNN`
 6. Copy artefacts to this folder: `cp -r *.md src/modules/BoostPolygon/linux/libinterface.so garage data/ garage-vNNN/`

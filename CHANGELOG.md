@@ -6,6 +6,7 @@
 - `help` command now lists registered console commands in alphabetical order
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON
+- Added space as a reserved binding for user debugging function, pressing it prints a message telling you where you can write your code
 - Changed behaviour for reloading empty/invalid items: previously the reload was ignored, now an empty file is loaded and displayed in the item list with grey text
 - Fixed an issue where items which change geometry type after reload did not work properly
 - Fixed incorrect positioning of the far clipping plane in certain scenarios

@@ -65,8 +65,6 @@ Keymap :: struct {
 
 init_keymap :: ()
 {
-    // @Incomplete Check we don't have clashing key mappings
-
     add_key(*app.keymap_keydown, toggle_show_help_ui, "Toggle help UI",  xx #char "h");
     add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "Toggle settings UI",  xx #char "h", .{shift_pressed=true});
     add_key(*app.keymap_keydown, toggle_show_ui, "Toggle entire UI",  xx #char "`");
@@ -78,7 +76,8 @@ init_keymap :: ()
     add_key(*app.keymap, reset_camera, "Reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
-    add_key(*app.keymap, toggle_current_selection_if_visible, "Toggle/complement visible item selection", xx #char "a", .{shift_pressed=true}); // @Refactor: add sweep selection
+    // @Refactor: This binding is a bit of a hack since we don't have sweep selection which would make it easier to select multiple items
+    add_key(*app.keymap, toggle_current_selection_if_visible, "Toggle/complement visible item selection", xx #char "a", .{shift_pressed=true});
 
     add_key(*app.keymap, reload_selected_items, "Reload selected items", xx Special_Key_Code.F5);
     add_key(*app.keymap, remove_selected_items, "Remove selected items", xx Special_Key_Code.DELETE);
@@ -97,7 +96,8 @@ init_keymap :: ()
     add_key(*app.keymap, rotate_look_direction_15_cw,  "Rotate  5  deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_15_ccw, "Rotate -5  deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
 
-    // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
+    // Reserved! Do not change this binding
+    add_key(*app.keymap, my_debug_function, "my_debug_function", xx #char " ");
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}, loc := #caller_location) {
 
@@ -247,8 +247,6 @@ toggle_current_selection :: () {
 
 reset_camera :: () { init_camera(); }
 
-// debug_junk :: () { c:= app.camera; printv(#code c); }
-
 cycle_opacity :: () {
 
     app_info := *app.selection_display_info;
@@ -269,4 +267,12 @@ cycle_normals_visibility :: () {
     for app.entities if it.is_selected {
         it.display_info.normals_visible = app_info.normals_visible;
     }
+}
+
+my_debug_function :: () {
+    print(#run join("\nYou pressed SPACE!\n",
+                    "This is a binding which will always be reserved for user debug functions.\n",
+                    tprint("You can edit the implementation at %:%\n\n", #file, #line)));
+
+    // Write your debug code here
 }

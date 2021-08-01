@@ -1,5 +1,6 @@
 ## Prioritized
 
+- [Commands] save_session <filename>, load_session <session> to write session state (loaded items, state changes, clipping plane locations etc etc)
 - [UI/UX,Bug] Comprehensively handle input that allowed when imgui has keyboard focus e.g., F5 etc
 - [Bug] JW reported an issue with loading objs that contain quads
 - [Bug] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
@@ -118,7 +119,6 @@
 - [Commands] load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] Implement commands to change the render settings on stuff
 - [Commands] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
-- [Commands] save_session <filename>, load_session <session> to write all commands in the session
 - [Commands] make_float/make_xform/make_mesh
 - [Commands] xform <id> <transform>
 - [Commands] edit <id> to popup inspection ui
