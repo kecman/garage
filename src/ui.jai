@@ -43,6 +43,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     }
 }
 
+// @Refactor This function is too long (especially the top level for loop). Break it up.
 show_item_list_ui :: () {
     using app;
 

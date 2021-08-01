@@ -7,6 +7,7 @@
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON
 - Changed behaviour for reloading empty/invalid items: previously the reload was ignored, now an empty file is loaded and displayed in the item list with grey text
+- Fixed an issue where items which change geometry type after reload did not work properly
 - Fixed incorrect positioning of the far clipping plane in certain scenarios
 - Fixed polyline soups loaded from obj files not displaying the point and polyline counts in the item context menu
 - Fixed an issue where the Control+` binding to toggle the console only worked if the user first left clicked outside any ui

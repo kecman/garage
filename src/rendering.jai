@@ -73,6 +73,8 @@ Display_Info :: struct {
     clip_ranges[2] = .{normal=.{0,0,1}};
 }
 
+// @Cleanup Should we check for null for all these pointers..?
+
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
     if info.is_dirty {
         if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {

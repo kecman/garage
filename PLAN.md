@@ -1,21 +1,19 @@
-## Next Release
+## Prioritized
 
 - [UI/UX,Bug] Comprehensively handle input that allowed when imgui has keyboard focus e.g., F5 etc
-- [Bug] Gracefully handle files that are empty. Maybe only if they were previously loaded.
-- [Bug] JW reported an issue where if the file type changes things crash, fix that!
 - [Bug] JW reported an issue with loading objs that contain quads
-- [Bug?] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
+- [Bug] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
 - [Bug] What should happen to prevent unwanted clipping when panning with the mouse
 - [UI/UX] Improve camera panning, so there's no 'slipping'
 - [UI/UX,Rendering] Render text over everything else
 - [UI/UX] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
-- [UI/UX] File load/reload should not skip empty files, the filenames could dim when the reload causes the file to become empty (IMPORTANT)
 - [UI/UX] Make more reasonable UI for changing transparency (and have commands that can set it)
-- [Geometry] Add support for Polygon3
 
 ## Backlog
 
 - [DevX] Do an audit/cleanup of the code to make it more hackable by other people
+- [Geometry] Add support for Polygon3
+- [Bug] Load a polyline obj, overwrite it with a mesh obj and note that the color is not set correctly---look at color_from_path and loading code..
 - [Bug] Fix the x64 build
 - [Bug] Fix the labels appearing outside the clipping box
 - [Bug] When loading a file that doesn't exist the text file handler reports unable to load file (good) but the obj loader also reports empty vertices (bad, to be fixed)

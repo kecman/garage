@@ -44,6 +44,14 @@ select_if_Polygon_Soup   :: () { select_if((e) => (e.type == .POLYGON_SOUP));   
 select_if_Mesh           :: () { select_if((e) => (e.type == .MESH));           } @RegisterCommand
 select_if_empty          :: () { select_if((e) => (is_empty(e)));               } @RegisterCommand
 
+// @Incomplete
+// select_if_regex_match
+// set_item_tooltip
+// set_item_label_color
+// set_selection_tooltip
+// set_selection_label_color
+// sort_by_type
+
 sort_by_name :: (alphabetical : int = 1) { // @Incomplete: allow this to be a boolean!
     compare_alphabetical :: (a : *Entity, b : *Entity) -> s64 {
         return compare_strings(a.fully_pathed_filename, b.fully_pathed_filename);
