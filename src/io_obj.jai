@@ -29,6 +29,7 @@ load_obj :: (filename : string) -> *Entity {
     }
 
     mesh : Mesh;
+    ok : bool;
 
     while true {
         line, found := consume_next_line(*handler);
@@ -155,15 +156,13 @@ load_obj :: (filename : string) -> *Entity {
             if dim == 2 {
                 result = New(Polyline_Soup2_Entity);
                 e := cast(*Polyline_Soup2_Entity)result; // @CompilerBug? Why do we need to do this?
-                ok : bool;
                 e.shape, ok = to_Polyline_Soup2(mesh);
-                assert(ok);
+                if !ok handler.failed = true;
             } else if dim == 3 {
                 result = New(Polyline_Soup3_Entity);
                 e := cast(*Polyline_Soup3_Entity)result; // @CompilerBug? Why do we need to do this?
-                ok : bool;
                 e.shape, ok = to_Polyline_Soup3(mesh);
-                assert(ok);
+                if !ok handler.failed = true;
             }
         case .POINTS; #through;
         case .TRIANGLES;
@@ -175,6 +174,7 @@ load_obj :: (filename : string) -> *Entity {
     if result {
         if handler.failed {
             deinit(result);
+            result = null;
         } else {
             log("Inferred entity type '%'", result.type);
         }
