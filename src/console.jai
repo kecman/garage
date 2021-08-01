@@ -267,15 +267,19 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
 
                     cursor : s32 = xx (word_end - word_start);
                     while true {
-                        cursor_character := to_upper(candidates[0][cursor]);
 
+                        cursor_character : u8;
                         all_candidates_match := true;
                         for candidate, candidate_index : candidates {
                             if !all_candidates_match {
                                 break;
                             }
 
-                            if cursor == candidate.count || cursor_character != to_upper(candidate[cursor]) {
+                            if cursor == candidate.count {
+                                all_candidates_match = false;
+                            } else if candidate_index == 0 {
+                                cursor_character = to_upper(candidates[0][cursor]);
+                            } else if cursor_character != to_upper(candidate[cursor]) {
                                 all_candidates_match = false;
                             }
                         }

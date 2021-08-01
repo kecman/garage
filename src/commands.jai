@@ -96,6 +96,18 @@ sort_by_point_count :: (ascending : int = 1) { // @Incomplete: allow this to be 
     else           quick_sort(app.entities, compare_descending);
 } @RegisterCommand
 
+clear_item :: (item_index : int) {
+    // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
+    if !check_geometry_index(item_index) {
+        return;
+    }
+
+    point_count := app.entities[item_index].mesh.positions.count;
+    clear(app.entities[item_index]);
+
+    console_add_log("# Cleared item %, which had % points", item_index, point_count);
+} @RegisterCommand
+
 clockwise_boundaries :: (item_index : int) {
     // @Refactor move this to boiler plate e.g., by adding special syntax for ints which are geometry indices
     if !check_geometry_index(item_index) {
