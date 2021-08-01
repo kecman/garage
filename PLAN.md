@@ -1,5 +1,12 @@
 ## Next Release
 
+- [UI/UX,Bug] Comprehensively handle input that allowed when imgui has keyboard focus e.g., F5 etc
+- [Bug] Gracefully handle files that are empty. Maybe only if they were previously loaded.
+- [Bug] JW reported an issue where if the file type changes things crash, fix that!
+- [Bug] JW reported an issue with loading objs that contain quads
+- [Bug?] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
+- [Bug] What should happen to prevent unwanted clipping when panning with the mouse
+- [UI/UX] Improve camera panning, so there's no 'slipping'
 - [UI/UX,Rendering] Render text over everything else
 - [UI/UX] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
 - [UI/UX] File load/reload should not skip empty files, the filenames could dim when the reload causes the file to become empty (IMPORTANT)
@@ -20,7 +27,6 @@
 - [UI/UX] Fix issue where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
 - [UI/UX] Don't close the item context menu unless we LMB into viewport
 - [UI/UX] Make long lists of items managable in the context menu
-- [UI/UX] Improve camera panning
 - [UI/UX] Make normals clip
 - [UI/UX,Rendering] Add an option not to render backfacing triangles of transparent items
 - [Distribution] Document goals/values in the README.md
