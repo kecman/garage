@@ -113,9 +113,7 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
         return;
     }
 
-    if render_info.is_dirty {
-        maybe_update_render_info(render_info, mesh);
-    }
+    maybe_update_render_info(render_info, mesh);
 
     glUseProgram(app.normals_program);
 
@@ -160,9 +158,7 @@ render_aabb :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
         return;
     }
 
-    if render_info.is_dirty {
-        maybe_update_render_info(render_info, mesh);
-    }
+    maybe_update_render_info(render_info, mesh);
 
     glUseProgram(app.aabb_program);
     set_model_view_projection_uniforms(app.aabb_program, <<mesh);
@@ -240,9 +236,7 @@ set_model_view_projection_uniforms :: (program : GLuint, mesh : Mesh) {
 
 Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) #expand {
 
-    if render_info.is_dirty {
-        maybe_update_render_info(render_info, mesh);
-    }
+    maybe_update_render_info(render_info, mesh);
 
     glUseProgram(app.mesh_program);
 

@@ -51,7 +51,44 @@ Mesh_Entity :: struct {
     type = .MESH;
 }
 
+clear :: (base : *Entity) {
+    if #complete base.type == {
+        case .UNKNOWN;
+            // do nothing
+
+        case .POLYLINE_SOUP2;
+
+            entity := cast(*Polyline_Soup2_Entity)base;
+            clear(*entity.mesh);
+            clear(*entity.shape);
+
+        case .POLYLINE_SOUP3;
+
+            entity := cast(*Polyline_Soup3_Entity)base;
+            clear(*entity.mesh);
+            clear(*entity.shape);
+
+        case .POLYGON_SOUP;
+
+            entity := cast(*Polygon_Soup_Entity)base;
+            clear(*entity.mesh);
+            clear(*entity.shape);
+
+        case .MESH;
+
+            entity := cast(*Mesh_Entity)base;
+            clear(*entity.mesh);
+    }
+
+    // Remove data from gpu memory as well
+    if base.render_info.vbo glDeleteBuffers(1, *base.render_info.vbo);
+    if base.render_info.ibo glDeleteBuffers(1, *base.render_info.ibo);
+    base.render_info = .{};
+}
+
 deinit :: (base : *Entity) {
+    if !base return;
+
     if #complete base.type == {
         case .UNKNOWN;
             // do nothing
@@ -80,11 +117,10 @@ deinit :: (base : *Entity) {
             deinit(*entity.mesh);
     }
 
+    // Remove data from gpu memory as well
     if base.render_info.vbo glDeleteBuffers(1, *base.render_info.vbo);
     if base.render_info.ibo glDeleteBuffers(1, *base.render_info.ibo);
-    base.render_info.vbo = 0;
-    base.render_info.ibo = 0;
-    base.render_info.is_dirty = true;
+    base.render_info = .{};
 
     free(base.fully_pathed_filename);
 }

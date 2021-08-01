@@ -27,8 +27,9 @@ copy_mesh :: (using mesh : Mesh) -> *Mesh {
     return result;
 }
 
-compute_vertex_normals_from_triangles :: (using mesh : *Mesh) -> bool, string
-{
+compute_vertex_normals_from_triangles :: (using mesh : *Mesh) -> bool, string {
+    if !mesh return false, "Null mesh";
+
     if mesh.geometry_format != .TRIANGLES {
         return false, "Invalid geometry format";
     }
@@ -60,7 +61,16 @@ compute_vertex_normals_from_triangles :: (using mesh : *Mesh) -> bool, string
     return true, "";
 }
 
+clear :: (using mesh : *Mesh) {
+    // Zeros all the counts, leaves the geometry format unchanged
+    array_reset_keeping_memory(*positions);
+    array_reset_keeping_memory(*normals);
+    array_reset_keeping_memory(*indices);
+}
+
 deinit :: (using mesh : *Mesh) {
+    if !mesh return;
+
     // Note: array_reset frees memory and zeros members
     array_reset(*positions);
     array_reset(*normals);
@@ -93,6 +103,8 @@ bounding_box :: (using mesh : Mesh, transform : Matrix4) -> AxisBox3 #must {
 }
 
 transform :: (using mesh : *Mesh, transform : Matrix4) {
+    if !mesh return;
+
     for * mesh.positions {
         <<it = (transform * make_vector4(<<it, 1.)).xyz;
     }

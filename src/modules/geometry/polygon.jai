@@ -8,8 +8,13 @@ Ring :: struct {
     points : [..]Vector2; // last point == first point
 }
 
-deinit :: (shape : *Ring)
-{
+clear :: (shape : *Ring) {
+    if !shape return;
+    array_reset_keeping_memory(*shape.points);
+}
+
+deinit :: (shape : *Ring) {
+    if !shape return;
     array_reset(*shape.points);
 }
 
@@ -34,8 +39,15 @@ Polygon :: struct {
     inner_rings : [..]Ring;
 }
 
-deinit :: (shape : *Polygon)
-{
+clear :: (shape : *Polygon) {
+    if !shape return;
+    clear(*shape.outer_ring);
+    for * shape.inner_rings clear(it);
+    array_reset_keeping_memory(*shape.inner_rings);
+}
+
+deinit :: (shape : *Polygon) {
+    if !shape return;
     deinit(*shape.outer_ring);
     for * shape.inner_rings deinit(it);
     array_reset(*shape.inner_rings);
@@ -121,13 +133,18 @@ edge_iterator :: (using ring : *Ring, body : Code, flags : For_Flags) #expand
 // Polygon Soup.
 //
 
-Polygon_Soup :: struct
-{
+Polygon_Soup :: struct {
     polygons : [..]Polygon;
 }
 
-deinit :: (shape : *Polygon_Soup)
-{
+clear :: (shape : *Polygon_Soup) {
+    if !shape return;
+    for * shape.polygons clear(it);
+    array_reset_keeping_memory(*shape.polygons);
+}
+
+deinit :: (shape : *Polygon_Soup) {
+    if !shape return;
     for * shape.polygons deinit(it);
     array_reset(*shape.polygons);
 }

@@ -11,7 +11,13 @@ Polyline :: struct ($Point : Type)
 Polyline2 :: Polyline(Vector2);
 Polyline3 :: Polyline(Vector3);
 
+clear :: (shape : *$T/Polyline) {
+    if !shape return;
+    array_reset_keeping_memory(*shape.points);
+}
+
 deinit :: (shape : *$T/Polyline) {
+    if !shape return;
     array_reset(*shape.points);
 }
 
@@ -40,7 +46,14 @@ Polyline_Soup :: struct ($Point : Type)
 Polyline_Soup2 :: Polyline_Soup(Vector2);
 Polyline_Soup3 :: Polyline_Soup(Vector3);
 
+clear :: (shape : *$T/Polyline_Soup) {
+    if !shape return;
+    for * shape.polylines clear(it);
+    array_reset_keeping_memory(*shape.polylines);
+}
+
 deinit :: (shape : *$T/Polyline_Soup) {
+    if !shape return;
     for * shape.polylines deinit(it);
     array_reset(*shape.polylines);
 }
