@@ -3,7 +3,7 @@
 - [Bug] What should happen to prevent unwanted clipping when panning with the mouse
 - [Bug] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
 - [Rendering] Matcap rendering similar to polyscope
-- [UI/UX] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
+- [Rendering] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
 - [UI/UX] Make more reasonable UI for changing transparency (and have commands that can set it)
 
 ## Backlog
@@ -16,7 +16,6 @@
 - [Bug] Fix obj loading for quad faces
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [README] Document goals/values in the README.md
-- [UI/UX] Add clipping plane widgets
 - [UI/UX] Use folding trees in help menu, default to unfolded
 - [UI/UX] Add a circling feature pre-screenshot
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
@@ -81,7 +80,6 @@
 - [Rendering] Alternate segment colours (two draw calls?)
 - [Rendering] Show grid lines
 - [Rendering] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
-- [Robustness] Add tests for obj loading
 - [Camera] Improve camera panning, so there's no 'slipping'
 - [Camera] Implement perspective projection
 - [Camera] First person camera with strafing and jump/crouch
@@ -111,6 +109,8 @@
 - [IO] Support .ply file formats
 - [IO] Support .off file formats
 - [IO] Support TetGen file formats
+- [Testing] Add tests for obj loading
+- [Testing] Use @test to tag/run tests in a metaprogram
 - [Cleanup] Do an audit/cleanup of the code to make it more hackable by other people
 - [Cleanup] Use context loggers to cleanup direct errors/warning/information messages to the console rather than the terminal
 - [Cleanup] Remove geometry module, just load files
@@ -123,7 +123,6 @@
 - [Bindings] Add libIGL bindings?
 - [Build] Compiled at time in Window, after version?
 - [Build] Bake fonts into the executable
-- [Meta-programming] Use @test to tag/run tests
 - [Meta-programming] Generate a list of used ImGui functions to simplify transitioning to a newer version
 - [Robustness] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 - [XXL] Buttons with icons which animate when you hover them
