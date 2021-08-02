@@ -1,21 +1,22 @@
 ## Prioritized
 
-- [Rendering] Matcap rendering similar to polyscope
-- [Bug] JW reported an issue with loading objs that contain quads
-- [Bug] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
 - [Bug] What should happen to prevent unwanted clipping when panning with the mouse
-- [UI/UX] Improve camera panning, so there's no 'slipping'
+- [Bug] Review parsing for floats. If this is broken then reading WKT files may be screwed!!
+- [Rendering] Matcap rendering similar to polyscope
 - [UI/UX] Make polygon index rendering show the actual indices of the polygon (not the triangulation)
 - [UI/UX] Make more reasonable UI for changing transparency (and have commands that can set it)
 
 ## Backlog
 
-- [DevX] Do an audit/cleanup of the code to make it more hackable by other people
-- [Geometry] Add support for Polygon3
 - [Bug] Load a polyline obj, overwrite it with a mesh obj and note that the color is not set correctly---look at color_from_path and loading code..
 - [Bug] Fix the x64 build
 - [Bug] Fix the labels appearing outside the clipping box
 - [Bug] When loading a file that doesn't exist the text file handler reports unable to load file (good) but the obj loader also reports empty vertices (bad, to be fixed)
+- [Bug] Fix erratic rotation when rotating about the selected axes
+- [Bug] Fix obj loading for quad faces
+- [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
+- [DevX] Do an audit/cleanup of the code to make it more hackable by other people
+- [Geometry] Add support for Polygon3
 - [UI/UX] Sweep drag improvements
   - have a cooldown rather than just toggling off on exit
   - make it work with scroll wheel in a long item list, does it work already?
@@ -61,19 +62,14 @@
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
 - [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor. Use lmb click drag for measuring
-- [UI/UX,Bug] Print boost polygon unsupported message to the console, log more stuff to the console in general
 - [Robustness] Add tests for obj loading
-- [Bug] Fix erratic rotation when rotating about the selected axes
+- [Camera] Improve camera panning, so there's no 'slipping'
 - [Camera] Implement perspective projection
 - [Camera] First person camera with strafing and jump/crouch
 - [Camera] Add orbit placement
 - [Camera] Make a function to spiral on the bounding sphere and have it activated via a console command
 - [Camera] Undo/redo system for camera and other operations
 - [Camera] Camera position history/bookmarks with notes/annotations
-- [UI/UX] Frame rate independent game loop?
-- [UI/UX,Bug] Fix obj loading for quad faces
-- [UI/UX] :UserConfig Hotload user configurable parameters
-- [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Commands] save_session <filename>, load_session <session> to write session state (loaded items, state changes, clipping plane locations etc etc)
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, geometric extent, size, number of points/faces, filename etc
@@ -92,6 +88,8 @@
 - [Commands] edit <id> to popup inspection ui
 - [Commands] assign x # assigns x to the previous result?
 - [Commands] undo/redo
+- [UI/UX] Frame rate independent game loop?
+- [UI/UX] :UserConfig Hotload user configurable parameters
 - [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
 - [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
@@ -128,7 +126,6 @@
 - [Bindings] Write a function to print in wkt format? simpler custom format?
 - [Bindings] Add libIGL bindings?
 - [UI/UX] Render the axes origin in different color when it's a model origin
-- [Bug] ImGui bindings for unix don't write declare CreateContext arguments #c_call
 - [Build] Bake fonts into the executable
 - [XXL,UI/UX] Buttons with icons which animate when you hover them
 - [XXL] Build and add bindings for gmp
