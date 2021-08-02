@@ -131,15 +131,15 @@ is_empty :: (entity : Entity) -> bool {
 
 entity_primary_color :: (using entity : *Entity) -> *Vector4 {
     if #complete type == {
-        case .UNKNOWN;
         case .POLYLINE_SOUP2; return *display_info.wireframe_color;
         case .POLYLINE_SOUP3; return *display_info.wireframe_color;
         case .POLYGON_SOUP;   return *display_info.surface_color;
+        case .UNKNOWN; #through;
         case .MESH;
             if #complete mesh.geometry_format == {
-                case .UNKNOWN;
                 case .POINTS;    return *display_info.points_color;
                 case .LINES;     return *display_info.wireframe_color;
+                case .UNKNOWN; #through;
                 case .TRIANGLES; return *display_info.surface_color;
             }
     }
@@ -147,7 +147,15 @@ entity_primary_color :: (using entity : *Entity) -> *Vector4 {
 }
 
 entity_filename :: (using entity : Entity, with_generation_index : bool, with_short_filename : bool, with_loaded_time : bool) -> string {
+
     name_text := fully_pathed_filename;
+
+#if OS == .WINDOWS {
+    for 0..name_text.count-1 {
+        if name_text[it] == #char "\\" name_text[it] = #char "/";
+    }
+}
+
     if with_short_filename {
         Push_Temporary();
         path := parse_path(fully_pathed_filename);

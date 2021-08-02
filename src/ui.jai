@@ -189,7 +189,6 @@ show_item_list_ui :: () {
                 ImGui.Separator();
 
                 if #complete it.type == {
-                    case .UNKNOWN;
                     case .POLYLINE_SOUP2;
 
                         using soup := cast(*Polyline_Soup2_Entity)it;
@@ -205,11 +204,12 @@ show_item_list_ui :: () {
                         using soup := cast(*Polygon_Soup_Entity)it;
                         ImGui.Text(to_c_string(tprint("PolygonSoup #points, #polygons = %, %", point_count(shape), shape.polygons.count)));
 
+                    case .UNKNOWN; #through;
                     case .MESH;
 
                         mesh := cast(*Mesh_Entity)it;
                         if #complete mesh.mesh.geometry_format == {
-                            case .UNKNOWN;
+                            case .UNKNOWN; #through;
                             case .POINTS;
                                 ImGui.Text(to_c_string(tprint("Mesh #points = %", mesh.mesh.positions.count)));
                             case .LINES;
