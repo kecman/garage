@@ -15,6 +15,7 @@
 - [Bug] Fix erratic rotation when rotating about the selected axes
 - [Bug] Fix obj loading for quad faces
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
+- [README] Document goals/values in the README.md
 - [UI/UX] Add clipping plane widgets
 - [UI/UX] Use folding trees in help menu, default to unfolded
 - [UI/UX] Add a circling feature pre-screenshot
@@ -33,10 +34,7 @@
 - [UI/UX] Hotload the keymap and settings files
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
 - [UI/UX] Scale zoom speed with scene bounding box when shift is held?
-- [UI/UX] Implement a view cube using the Simp module
-  - Call SDL_GetWindowWMInfo to get a https://wiki.libsdl.org/SDL_SysWMinfo from which you can get the X11.Window to pass to sim
-        SDL_GetWindowWMInfo(window, *wmInfo);
-        io.ImeWindowHandle = wmInfo.info.win.window;
+- [UI/UX] Implement a view cube using the Jai immediate mode graphics module ("Simp"). Call `SDL_GetWindowWMInfo` to get a https://wiki.libsdl.org/SDL_SysWMinfo from which you can get the `X11.Window` to pass to sim `SDL_GetWindowWMInfo(window, *wmInfo); io.ImeWindowHandle = wmInfo.info.win.window;`
 - [UI/UX] Scale the axes according to the bbox of the scene?
 - [UI/UX] Arrow keys pan across bounding box?
 - [UI/UX] Write the fully pathed filename even for files loaded on the command line
@@ -52,28 +50,22 @@
 - [UI/UX] Add a button to capture a screenshot, look at the Jai Clipboard module
 - [UI/UX] Hover over UI element (button/checkbox) and press a key to bind that key to it, display the bound keys in a list somewhere
 - [UI/UX] When hovering over items in the scene make the others/overlapping ones transparent
-- [UI/UX] Sweep drag improvements
-  - have a cooldown rather than just toggling off on exit
-  - make it work with scroll wheel in a long item list, does it work already?
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 - [UI/UX] Add some options for backface shading, including an obnoxiously visible one for finding holes in meshes
 - [UI/UX] Fix issue where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
 - [UI/UX] Don't close the item context menu unless we LMB into viewport
 - [UI/UX] Make long lists of items managable in the context menu
-- [UI/UX] Make normals clip
-- [Distribution] Document goals/values in the README.md
-- [UI/UX] Clipping improvements
-  - Add plane visualisation, maybe also intersecting the planes
-  - Add option to make the clipped geometry render with non-zero opacity
-  - Make LMB be the only one to close popups, so you can rotate the view while a popup is open
-  - Better UX for the clipping
-    - Pick some distance computation e.g., distance from a plane, or distance from a point (euclidean distance == spherical clipping, manhattan distance == cube clipping)
-    - Define the primitive for distance computation e.g., imgui drag float widgets for coeffs in a plane/coordinates of a point, or set via selecting something in the scene.
-    - Pick some clipping criterion e.g., dist > value, or min < dist < max
-    - Ex1: Sphere/Cube clipping using a sphere/cube around a selected point might be handy to look at something inside a hole
-    - Ex2: Plane clipping using a plane though three selected points would be handy to look at infill paths
 - [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
+- [UI/UX] Clipping. Make normals clip
+- [UI/UX] Clipping. Add clip volume visualisation
+- [UI/UX] Clipping. Add option to render clipped geometry with non-zero opacity
+- [UI/UX] Clipping. Revisit UX:
+  - Pick some distance computation e.g., distance from a plane, or distance from a point (euclidean distance == spherical clipping, manhattan distance == cube clipping)
+  - Define the primitive for distance computation e.g., imgui drag float widgets for coeffs in a plane/coordinates of a point, or set via selecting something in the scene.
+  - Pick some clipping criterion e.g., dist > value, or min < dist < max
+  - Ex1: Sphere/Cube clipping using a sphere/cube around a selected point might be handy to look at something inside a hole
+  - Ex2: Plane clipping using a plane though three selected points would be handy to look at infill paths
 - [Rendering] Render text over everything else
 - [Rendering] Render aabbs when the box extents are hovered in the UI
 - [Rendering] Add option to render normals using only one component
@@ -119,20 +111,20 @@
 - [IO] Support .ply file formats
 - [IO] Support .off file formats
 - [IO] Support TetGen file formats
-- [README] Explain high-level goals
 - [Cleanup] Do an audit/cleanup of the code to make it more hackable by other people
+- [Cleanup] Use context loggers to cleanup direct errors/warning/information messages to the console rather than the terminal
 - [Cleanup] Remove geometry module, just load files
 - [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 - [Cleanup] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - [Cleanup] Use a union to store entities directly in an array, rather than storing pointers to entities
-- [Meta-programming] Use @test to tag/run tests
-- [Meta-programming] Generate a list of used ImGui functions to simplify transitioning to a newer version
 - [Bindings] Improve API, these accept pointers because the c++ functions take const-ref args
 - [Bindings] Can these declarations have notes? Check Preload.jai?
 - [Bindings] Write a function to print in wkt format? simpler custom format?
 - [Bindings] Add libIGL bindings?
 - [Build] Compiled at time in Window, after version?
 - [Build] Bake fonts into the executable
+- [Meta-programming] Use @test to tag/run tests
+- [Meta-programming] Generate a list of used ImGui functions to simplify transitioning to a newer version
 - [Robustness] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 - [XXL] Buttons with icons which animate when you hover them
 - [XXL] Build and add bindings for gmp
