@@ -85,20 +85,6 @@ current_window_aspect_ratio_width_over_height :: () -> float {
     return cast(float) app.current_window_width / cast(float) app.current_window_height;
 }
 
-Modifier_Flags :: struct {
-    shift_pressed   := false;
-    control_pressed := false;
-    alt_pressed     := false;
-}
-
-operator== :: (a : Modifier_Flags, b : Modifier_Flags) -> bool {
-    // @Cleanup: reimplement using reflection
-    control_equal := (a.control_pressed == b.control_pressed);
-    shift_equal   := (a.shift_pressed   == b.shift_pressed);
-    alt_equal     := (a.alt_pressed     == b.alt_pressed);
-    return control_equal && shift_equal && alt_equal;
-}
-
 entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, should_visit : (*Entity)->bool) #expand {
     #assert(flags == 0); // No options are supported
 

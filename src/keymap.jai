@@ -6,10 +6,25 @@ Keymap_Proc_Info :: struct {
     proc: #type () -> ();
 }
 
+Modifier_Flags :: struct {
+    shift_pressed   := false;
+    control_pressed := false;
+    alt_pressed     := false;
+}
+
+operator== :: (a : Modifier_Flags, b : Modifier_Flags) -> bool {
+    // @Cleanup: reimplement using reflection
+    control_equal := (a.control_pressed == b.control_pressed);
+    shift_equal   := (a.shift_pressed   == b.shift_pressed);
+    alt_equal     := (a.alt_pressed     == b.alt_pressed);
+    return control_equal && shift_equal && alt_equal;
+}
+
 Single_Key_Mapping :: struct {
     key_code :       u32; // ASCII if key_code >= 32, Special_Key_Code otherwise
     modifier_flags : Modifier_Flags;
     proc_info_index : int;
+    override_WantCaptureKeyboard : bool;
 }
 
 // Compile-time check to ensure we don't stomp the ASCII key codes we want
@@ -25,10 +40,16 @@ Special_Key_Code :: enum u32 #specified {
     F3     :: 13; // unused
     F4     :: 14; // unused
     F5     :: 15;
+    F6     :: 16; // unused
+    F7     :: 17; // unused
+    F8     :: 18; // unused
+    F9     :: 19; // unused
+    F10     :: 20; // unused
+    F11     :: 21;
+    F12     :: 22; // unused
 }
 
-to_string :: (using mapping : Single_Key_Mapping) -> string
-{
+to_string :: (using mapping : Single_Key_Mapping) -> string {
     builder : String_Builder;
     defer free_buffers(*builder);
     if modifier_flags.control_pressed print_to_builder(*builder, "C-");
@@ -51,6 +72,13 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
         case .F3;     print_to_builder(*builder, "F3");
         case .F4;     print_to_builder(*builder, "F4");
         case .F5;     print_to_builder(*builder, "F5");
+        case .F6;     print_to_builder(*builder, "F6");
+        case .F7;     print_to_builder(*builder, "F7");
+        case .F8;     print_to_builder(*builder, "F8");
+        case .F9;     print_to_builder(*builder, "F9");
+        case .F10;    print_to_builder(*builder, "F10");
+        case .F11;    print_to_builder(*builder, "F11");
+        case .F12;    print_to_builder(*builder, "F12");
     }
 
     return builder_to_string(*builder);
@@ -63,15 +91,15 @@ Keymap :: struct {
     mappings : [..] Single_Key_Mapping;
 }
 
-init_keymap :: ()
-{
+init_keymap :: () {
+    add_key(*app.keymap_keydown, toggle_fullscreen, "Toggle fullscreen", xx Special_Key_Code.F11, override_WantCaptureKeyboard=true);
     add_key(*app.keymap_keydown, toggle_show_help_ui, "Toggle help UI",  xx #char "h");
     add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "Toggle settings UI",  xx #char "h", .{shift_pressed=true});
     add_key(*app.keymap_keydown, toggle_show_ui, "Toggle entire UI",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_console_ui, "Toggle console UI",  xx #char "`", .{control_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_console_ui, "Toggle console UI",  xx #char "`", .{control_pressed=true}, override_WantCaptureKeyboard=true);
     add_key(*app.keymap_keydown, toggle_selection_mode, "Toggle Selection Mode",  xx #char "m");
 
-    add_key(*app.keymap, close_application, "Close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
+    add_key(*app.keymap, quit_application, "Quit application", xx #char "q", .{shift_pressed=true, control_pressed=true}, override_WantCaptureKeyboard=true);
     add_key(*app.keymap, call_fit_on_screen, "Fit on screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "Reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
@@ -79,7 +107,7 @@ init_keymap :: ()
     // @Refactor: This binding is a bit of a hack since we don't have sweep selection which would make it easier to select multiple items
     add_key(*app.keymap, toggle_current_selection_if_visible, "Toggle/complement visible item selection", xx #char "a", .{shift_pressed=true});
 
-    add_key(*app.keymap, reload_selected_items, "Reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, reload_selected_items, "Reload selected items", xx Special_Key_Code.F5, override_WantCaptureKeyboard=true);
     add_key(*app.keymap, remove_selected_items, "Remove selected items", xx Special_Key_Code.DELETE);
     add_key(*app.keymap, cycle_opacity, "Cycle opacity 20%%/50%%/100%% for selected items", xx #char "o");
     add_key(*app.keymap, cycle_normals_visibility, "Cycle normals visibility for selected items", xx #char "n");
@@ -99,7 +127,12 @@ init_keymap :: ()
     // Reserved! Do not change this binding
     add_key(*app.keymap, my_debug_function, "my_debug_function", xx #char " ");
 
-    add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}, loc := #caller_location) {
+    add_key :: (keymap : *Keymap, proc : ()->(),
+                name : string,
+                key_code : u32,
+                modifier_flags : Modifier_Flags = .{},
+                override_WantCaptureKeyboard := false,
+                loc := #caller_location) {
 
         // Check that the binding is available
         for keymap.mappings {
@@ -117,6 +150,7 @@ init_keymap :: ()
         mapping.key_code = key_code;
         mapping.modifier_flags = modifier_flags;
         mapping.proc_info_index = keymap.procs.count - 1;
+        mapping.override_WantCaptureKeyboard = override_WantCaptureKeyboard;
     }
 }
 
@@ -127,7 +161,7 @@ init_keymap :: ()
 //
 
 call_fit_on_screen             :: () { fit_scene_on_screen(); } // @CompilerBug? why do we need this wrapper
-close_application              :: () { app.closing_application = true; }
+quit_application               :: () { app.closing_application = true; }
 toggle_show_ui                 :: () { app.show_ui = !app.show_ui; }
 toggle_show_global_settings_ui :: () { app.show_global_settings_ui = !app.show_global_settings_ui; }
 toggle_show_help_ui            :: () { app.show_ui, app.show_help_ui    = true, !app.show_help_ui; }
@@ -209,6 +243,12 @@ toggle_is_visible :: () {
     for app.entities if it.is_selected {
         it.is_visible = !it.is_visible;
     }
+}
+
+toggle_fullscreen :: () {
+    app.fullscreen = !app.fullscreen;
+    flags : u32 = ifx app.fullscreen then cast(u32) 0 else xx SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+    ok := SDL_SetWindowFullscreen(app.window, flags); // @Robustness handle error
 }
 
 reload_selected_items :: () {

@@ -276,21 +276,15 @@ handle_events :: () {
                     app.current_window_height = event.window.data2;
                 }
             case SDL_KEYDOWN; {
-                // If the control key is down we do not break so that the C-` keybinding for toggling the console window works!
-                if io().WantCaptureKeyboard && !io().KeyCtrl break;
-
-                // @Cleanup move to keymap file
-                if  event.key.keysym.sym == SDLK_F11 {
-                    app.fullscreen = !app.fullscreen;
-                    flags : u32 = ifx app.fullscreen then cast(u32) 0 else xx SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
-                    ok := SDL_SetWindowFullscreen(app.window, flags); // @Robustness handle error
-                }
 
                 for app.keymap_keydown.mappings {
                     if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
                         if io().KeyShift == it.modifier_flags.shift_pressed   &&
                            io().KeyCtrl  == it.modifier_flags.control_pressed &&
                            io().KeyAlt   == it.modifier_flags.alt_pressed {
+                            if io().WantCaptureKeyboard && !it.override_WantCaptureKeyboard {
+                                continue;
+                            }
                             app.keymap_keydown.procs[it.proc_info_index].proc();
                             break;
                         }
@@ -298,13 +292,15 @@ handle_events :: () {
                 }
             }
             case SDL_KEYUP; {
-                if io().WantCaptureKeyboard break;
 
                 for app.keymap.mappings {
                     if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
                         if io().KeyShift == it.modifier_flags.shift_pressed   &&
                            io().KeyCtrl  == it.modifier_flags.control_pressed &&
                            io().KeyAlt   == it.modifier_flags.alt_pressed {
+                            if io().WantCaptureKeyboard && !it.override_WantCaptureKeyboard {
+                                continue;
+                            }
                             app.keymap.procs[it.proc_info_index].proc();
                             break;
                         }
@@ -384,6 +380,13 @@ to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
         case Special_Key_Code.F3;     return SDLK_F3;
         case Special_Key_Code.F4;     return SDLK_F4;
         case Special_Key_Code.F5;     return SDLK_F5;
+        case Special_Key_Code.F6;     return SDLK_F6;
+        case Special_Key_Code.F7;     return SDLK_F7;
+        case Special_Key_Code.F8;     return SDLK_F8;
+        case Special_Key_Code.F9;     return SDLK_F9;
+        case Special_Key_Code.F10;    return SDLK_F10;
+        case Special_Key_Code.F11;    return SDLK_F11;
+        case Special_Key_Code.F12;    return SDLK_F12;
     }
     return SDLK_UNKNOWN;
 }

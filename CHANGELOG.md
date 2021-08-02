@@ -11,7 +11,7 @@
 - Fixed an issue where items which change geometry type after reload did not work properly
 - Fixed incorrect positioning of the far clipping plane in certain scenarios
 - Fixed polyline soups loaded from obj files not displaying the point and polyline counts in the item context menu
-- Fixed an issue where the Control+` binding to toggle the console only worked if the user first left clicked outside any ui
+- Fixed an issue where some bindings (eg., quit application, toggle console, toggle fullscreen, reload files) only worked if the user first left clicked outside any ui
 - Fixed a UX issue so only the specific color channels that were changed get updated, this makes it possible to bulk change item opacity without also setting them to all have the same color
 
 ## Version: v0.1.2, 16 July 2021
