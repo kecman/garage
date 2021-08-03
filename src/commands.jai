@@ -11,6 +11,7 @@ quit :: () {
 } @RegisterCommand
 
 history :: () {
+    console_clear_log();
     for app.console.history console_add_log("# % %", it_index, it);
 } @RegisterCommand
 
@@ -24,10 +25,10 @@ help :: () {
     for app.console.commands console_add_log("#  %", it.usage);
 } @RegisterCommand
 
-select_if :: (f : (Entity) -> bool) {
+select_if :: (should_select : (Entity)->bool) {
     count := 0;
     for app.entities {
-        if f(<<it) {
+        if should_select(<<it) {
             it.is_selected = true;
             count += 1;
         } else {
@@ -44,8 +45,24 @@ select_if_Polygon_Soup   :: () { select_if((e) => (e.type == .POLYGON_SOUP));   
 select_if_Mesh           :: () { select_if((e) => (e.type == .MESH));           } @RegisterCommand
 select_if_empty          :: () { select_if((e) => (is_empty(e)));               } @RegisterCommand
 
+// @CompilerBug By passing *void data to the should_select procedure we could use the generic version above
+select_if_match :: (pattern : string) {
+    count := 0;
+    for app.entities {
+        text := entity_filename(<<it, false, true, false);
+        if wildcard_match(text, pattern) {
+            it.is_selected = true;
+            count += 1;
+        } else {
+            it.is_selected = false;
+        }
+    }
+    if count == 1 console_add_log("# selected 1 entity");
+    else          console_add_log("# selected % entities", count);
+} @RegisterCommand
+
+
 // @Incomplete
-// select_if_regex_match
 // set_item_tooltip
 // set_item_label_color
 // set_selection_tooltip
@@ -110,10 +127,11 @@ clear_item :: (item_index : int) {
         return;
     }
 
-    point_count := app.entities[item_index].mesh.positions.count;
-    clear(app.entities[item_index]);
+    item := app.entities[item_index];
+    point_count := item.mesh.positions.count;
+    clear(item);
 
-    console_add_log("# Cleared item %, which had % points", item_index, point_count);
+    console_add_log("# Cleared item #% which had % points", item_index, point_count);
 } @RegisterCommand
 
 clockwise_boundaries :: (item_index : int) {

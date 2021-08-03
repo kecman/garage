@@ -3,6 +3,7 @@
 - Added ability to register console commands by adding a @RegisterCommand note to procedures
   - Commands are checked to ensure they have 0 return values
   - Commands are checked to ensure all arguments have type int, float or string
+- Added various improvements to the way the console completion and history works
 - `help` command now lists registered console commands in alphabetical order
 - Added support for simple .wkt files, containing exactly one of the following geometry types:
   - POINT, MULTIPOINT, LINESTRING, MULTILINESTRING, POLYGON, MULTIPOLYGON

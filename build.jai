@@ -134,7 +134,6 @@ build :: () {
 generated_code := false;
 registered_console_commands : [..]*Code_Procedure_Header;
 
-// @Incomplete detect and error on overflow
 generate_code_to_register_console_commands :: (w : Workspace) {
 
     Print :: (format_string : string, args : ..Any) #expand {
@@ -217,9 +216,9 @@ generate_code_to_register_console_commands :: (w : Workspace) {
         Print("    // Check number of arguments\n");
         Print("    if args.count < % || args.count > % {\n", min_arg_count, max_arg_count);
         if min_arg_count == max_arg_count {
-            Print("        console_add_log(\"[error] expected exactly % argument%, got %%.\", args.count);\n", command.arguments.count, plural);
+            Print("        console_add_log(\"[error] Expected exactly % argument%, got %%.\", args.count);\n", command.arguments.count, plural);
         } else {
-            Print("        console_add_log(\"[error] expected between % and % arguments, got %%.\", args.count);\n", min_arg_count, max_arg_count, command.arguments.count);
+            Print("        console_add_log(\"[error] Expected between % and % arguments, got %%.\", args.count);\n", min_arg_count, max_arg_count, command.arguments.count);
         }
         Print("        return;\n");
         Print("    }\n\n");
@@ -246,10 +245,11 @@ generate_code_to_register_console_commands :: (w : Workspace) {
 
             if arg.type.type == {
                 case .INTEGER;
+                    // @Incomplete Check for overflow?
                     Print("%if args[%].type.type == .INTEGER {\n", indent, arg_index);
                     Print("%    a%2 = xx <<cast(*s64)(args[%2].value_pointer);\n", indent, arg_index);
                     Print("%} else {\n", indent);
-                    Print("%    console_add_log(\"[error] argument %2 is not an int, its a %%\", args[%2].type.type);\n", indent, arg_index);
+                    Print("%    console_add_log(\"[error] Argument %2 is not an int, its a %%\", args[%2].type.type);\n", indent, arg_index);
                     Print("%    return;\n", indent);
                     Print("%}\n", indent);
                 case .FLOAT;
@@ -258,14 +258,14 @@ generate_code_to_register_console_commands :: (w : Workspace) {
                     Print("%} else if args[%].type.type == .INTEGER {\n", indent, arg_index);
                     Print("%    a%2 = xx <<cast(*s64)(args[%2].value_pointer);\n", indent, arg_index);
                     Print("%} else {\n", indent);
-                    Print("%    console_add_log(\"[error] argument %2 is not a number, its a %%\", args[%2].type.type);\n", indent, arg_index);
+                    Print("%    console_add_log(\"[error] Argument %2 is not a number, its a %%\", args[%2].type.type);\n", indent, arg_index);
                     Print("%    return;\n", indent);
                     Print("%}\n", indent);
                 case .STRING;
                     Print("%if args[%].type.type == .STRING {\n", indent, arg_index);
                     Print("%    a%2 = xx <<cast(*string)(args[%2].value_pointer);\n", indent, arg_index);
                     Print("%} else {\n", indent);
-                    Print("%    console_add_log(\"[error] argument %2 is not an string, its a %%\", args[%2].type.type);\n", indent, arg_index);
+                    Print("%    console_add_log(\"[error] Argument %2 is not an string, its a %%\", args[%2].type.type);\n", indent, arg_index);
                     Print("%    return;\n", indent);
                     Print("%}\n", indent);
             }

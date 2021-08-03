@@ -164,16 +164,16 @@ entity_filename :: (using entity : Entity, with_generation_index : bool, with_sh
         }
     }
 
-    index_text := " ";
+    index_text := "";
     if generation_index != 0 && with_generation_index {
-        index_text = tprint("<%> ", generation_index);
+        index_text = tprint(" <%>", generation_index);
     }
 
     time_text := "";
     time_separator := "";
     if with_loaded_time {
         time_text = filetime_to_readable_date(loaded_filetime);
-        time_separator = "@ ";
+        time_separator = " @ ";
     }
 
     return tprint("%1%2%3%4", name_text, index_text, time_separator, time_text);

@@ -85,14 +85,22 @@ console_execute_command :: (_command : string) {
         } else if tok.type == .IDENTIFIER {
             if sign < 0 {
                 p.failed = true;
-                console_add_log("[error] When parsing '%' : Unexpected preceeding - token.", _command);
+                console_add_log("[error] Unexpected preceeding - token.");
+                console_add_history("%", _command);
+                return;
+            } else if command_name != "" {
+                console_add_log("[error] Unexpected token IDENTIFIER (%) in argument list, string arguments use single/double quotes.", to_string(tok));
+                console_add_history("%", _command);
+                return;
             }
             command_name = tok.string_value;
             eat_token(*p);
         } else if tok.type == .SQSTRING || tok.type == .DQSTRING {
             if sign < 0 {
                 p.failed = true;
-                console_add_log("[error] When parsing '%' : Unexpected preceeding - token.", _command);
+                console_add_log("[error] Unexpected preceeding - token.");
+                console_add_history("%", _command);
+                return;
             }
             array_add(*command_args, copy_any(tok.string_value));
             eat_token(*p);
@@ -111,7 +119,8 @@ console_execute_command :: (_command : string) {
         } else {
             // @Cleanup Use parser.jai error function with custom logger which prints to the console
             p.failed = true;
-            console_add_log("[error] When parsing '%' : Unexpected token %.", _command, to_string(tok));
+            console_add_log("[error] Unexpected token %.", to_string(tok));
+            console_add_history("%", _command);
             return;
         }
     }
@@ -231,6 +240,12 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
         if data.EventFlag == {
             case .CallbackCompletion; {
 
+                // Only complete the function name
+                current_input := to_string(data.Buf, data.CursorPos);
+                if contains(current_input, " ") {
+                    return 0;
+                }
+
                 // Locate beginning of current word
                 word_end := data.Buf + data.CursorPos;
                 word_start := word_end;
@@ -249,9 +264,11 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
 
                 // Build a list of candidates // @TODO Use temporary allocator here
                 candidates : [..]string;
+                candidates_usage : [..]string;
                 for app.console.commands {
                     if begins_with_nocase(it.name, current_word) {
                         array_add(*candidates, it.name);
+                        array_add(*candidates_usage, it.usage);
                     }
                 }
 
@@ -262,6 +279,13 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
                     data.DeleteChars(data, xx (word_start - data.Buf), xx (word_end - word_start));
                     data.InsertChars(data, data.CursorPos, candidates[0]);
                     data.InsertChars(data, data.CursorPos, " ");
+
+                    // List matches
+                    console_clear_log();
+                    console_add_log("# Matching commands:");
+                    for candidate : candidates_usage {
+                        console_add_log("#  %", candidate);
+                    }
                 } else {
                     // Multiple matches. Complete as much as we can
 
@@ -300,7 +324,7 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
                     // List matches
                     console_clear_log();
                     console_add_log("# Matching commands:");
-                    for candidate : candidates {
+                    for candidate : candidates_usage {
                         console_add_log("#  %", candidate);
                     }
                 }
