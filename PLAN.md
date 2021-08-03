@@ -9,7 +9,7 @@
 ## Backlog
 
 - [Bug] Load a polyline obj, overwrite it with a mesh obj and note that the color is not set correctly---look at color_from_path and loading code..
-- [Bug] Fix the x64 build
+- [Bug] Fix the x64 build on linux (possible compiler bug)
 - [Bug] Fix the labels appearing outside the clipping box
 - [Bug] When loading a file that doesn't exist the text file handler reports unable to load file (good) but the obj loader also reports empty vertices (bad, to be fixed)
 - [Bug] Fix erratic rotation when rotating about the selected axes
@@ -87,6 +87,7 @@
 - [Camera] Make a function to spiral on the bounding sphere and have it activated via a console command
 - [Camera] Undo/redo system for camera and other operations
 - [Camera] Camera position history/bookmarks with notes/annotations
+- [Camera] Change to orthographic when panning or zooming and perpective in first person view? Smooth blend between two
 - [Commands] save_session <filename>, load_session <session> to write session state (loaded items, state changes, clipping plane locations etc etc)
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, geometric extent, size, number of points/faces, filename etc
@@ -106,6 +107,7 @@
 - [Commands] assign x # assigns x to the previous result?
 - [Commands] undo/redo
 - [IO] Natively support heightmaps, have native, simple and fast loading file formats
+- [IO] Support .stl file formats
 - [IO] Support .ply file formats
 - [IO] Support .off file formats
 - [IO] Support TetGen file formats
