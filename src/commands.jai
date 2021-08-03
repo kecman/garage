@@ -83,7 +83,7 @@ sort_by_name :: (alphabetical : int = 1) { // @Incomplete: allow this to be a bo
 } @RegisterCommand
 
 // @Cleanup This is a pretty weird way to do this...
-sort_by_load_time :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
+sort_by_time :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
     compare_ascending :: (a : *Entity, b : *Entity) -> s64 {
         at := filetime_to_readable_date(a.loaded_filetime);
         bt := filetime_to_readable_date(b.loaded_filetime);
@@ -102,7 +102,7 @@ sort_by_load_time :: (ascending : int = 1) { // @Incomplete: allow this to be a 
     else           quick_sort(app.entities, compare_descending);
 } @RegisterCommand
 
-sort_by_point_count :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
+sort_by_size :: (ascending : int = 1) { // @Incomplete: allow this to be a boolean!
     compare_ascending :: (a : *Entity, b : *Entity) -> s64 {
         if a.mesh.positions.count == b.mesh.positions.count {
             return compare_strings(a.fully_pathed_filename, b.fully_pathed_filename);
