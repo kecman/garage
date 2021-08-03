@@ -304,7 +304,7 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
     glEnable(GL_PROGRAM_POINT_SIZE);
 }
 
-render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_offset : int = 0) {
+render_vertex_labels :: (points : []$T, world_from_model : Matrix4, style : Vertex_Label_Style, label_index_offset : int = 0) {
     #assert(T == Vector2 || T == Vector3);
     dim :: #run dimension_of(T);
 
@@ -319,7 +319,6 @@ render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_
     // defer glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    world_from_model := matrix4_identity();
     projection_from_model := make_projection_from_world(app.camera) * world_from_model;
 
     new_context := context;
@@ -371,7 +370,7 @@ render_entities :: () {
                 for polyline : soup.shape.polylines {
                     Reserve_Labels(polyline.points.count);
                     if label_limit >= 0 {
-                        render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
+                        render_vertex_labels(polyline.points, soup.mesh.world_from_model, entity.display_info.vertex_label_style);
                     }
                 }
 
@@ -384,7 +383,7 @@ render_entities :: () {
                 for polyline : soup.shape.polylines {
                     Reserve_Labels(polyline.points.count);
                     if label_limit >= 0 {
-                        render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
+                        render_vertex_labels(polyline.points, soup.mesh.world_from_model, entity.display_info.vertex_label_style);
                     }
                 }
 
@@ -397,9 +396,9 @@ render_entities :: () {
                 for polygon : soup.shape.polygons {
                     Reserve_Labels(point_count(polygon));
                     if label_limit >= 0 {
-                        render_vertex_labels(polygon.outer_ring.points, entity.display_info.vertex_label_style);
+                        render_vertex_labels(polygon.outer_ring.points, soup.mesh.world_from_model, entity.display_info.vertex_label_style);
                         for inner_ring : polygon.inner_rings {
-                            render_vertex_labels(inner_ring.points, entity.display_info.vertex_label_style);
+                            render_vertex_labels(inner_ring.points, soup.mesh.world_from_model, entity.display_info.vertex_label_style);
                         }
                     }
                 }
@@ -415,7 +414,7 @@ render_entities :: () {
                 // @Cleanup so the transform is also available for text rendering
                 Reserve_Labels(mesh.mesh.positions.count);
                 if label_limit >= 0 || (entity == *app.user_selection) {
-                    render_vertex_labels(mesh.mesh.positions, entity.display_info.vertex_label_style);
+                    render_vertex_labels(mesh.mesh.positions, mesh.mesh.world_from_model, entity.display_info.vertex_label_style);
                 }
         }
     }

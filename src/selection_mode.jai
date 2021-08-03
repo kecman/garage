@@ -11,7 +11,7 @@ do_selection_mode :: () {
         render_mesh_lines(mesh, *entity.render_info, entity.display_info);
         render_mesh_triangles(mesh, *entity.render_info, entity.display_info);
         render_normals(mesh, *entity.render_info, entity.display_info);
-        render_vertex_labels(mesh.positions, entity.display_info.vertex_label_style);
+        render_vertex_labels(mesh.positions, mesh.world_from_model, entity.display_info.vertex_label_style);
     }
 
     if io().WantCaptureMouse || !ImGui.IsMousePosValid(*io().MousePos) {

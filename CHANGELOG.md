@@ -11,6 +11,7 @@
 - Changed behaviour for reloading empty/invalid items: previously the reload was ignored, now an empty file is loaded and displayed in the item list with grey text
 - Fixed an issue where items which change geometry type after reload did not work properly
 - Fixed incorrect positioning of the far clipping plane in certain scenarios
+- Fixed incorrect positioning of text labels when the mesh model to world transform was not identity
 - Fixed polyline soups loaded from obj files not displaying the point and polyline counts in the item context menu
 - Fixed an issue where some bindings (eg., quit application, toggle console, toggle fullscreen, reload files) only worked if the user first left clicked outside any ui
 - Fixed a UX issue so only the specific color channels that were changed get updated, this makes it possible to bulk change item opacity without also setting them to all have the same color
