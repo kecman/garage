@@ -101,7 +101,6 @@ init_keymap :: () {
     add_key(*app.keymap, reset_camera, "Reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
-    // @Refactor: This binding is a bit of a hack since we don't have sweep selection which would make it easier to select multiple items
     add_key(*app.keymap, toggle_current_selection_if_visible, "Toggle/complement visible item selection", xx #char "a", .{shift_pressed=true});
 
     add_key(*app.keymap, reload_selected_items, "Reload selected items", xx Special_Key_Code.F5, override_WantCaptureKeyboard=true);
