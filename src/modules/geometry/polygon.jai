@@ -1,4 +1,4 @@
-// @Cleanup: explicitly allocator and array views, see e.g., Hash_Table.jai
+// @Cleanup explicitly store allocator/allocator_data and use array views? see e.g., Hash_Table.jai
 
 //
 // Ring. A closed line (last point == first point) which should not be self-intersecting, inside is on the left of the points

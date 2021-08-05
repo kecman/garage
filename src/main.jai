@@ -308,7 +308,7 @@ handle_events :: () {
                 }
             }
             case SDL_DROPFILE; {
-                // @Leak @Cleanup event.drop.file should be free'd using SDL_free
+                // @Leak event.drop.file should be free'd using SDL_free
                 dropped := to_string(event.drop.file);
                 found, found_index := find_entity_with_max_generation_index(dropped);
                 if found {

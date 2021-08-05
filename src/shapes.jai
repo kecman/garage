@@ -11,7 +11,6 @@ par_shapes_mesh :: struct
     tcoords : [..]Vector2;
 };
 
-// @Cleanup pass a pointer for clarity
 deinit :: (mesh : par_shapes_mesh) -> ()
 {
     // Note: array_reset frees memory and zeros members

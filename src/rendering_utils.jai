@@ -60,7 +60,6 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     debug_mesh := to_Mesh(debug_mesh_ps);
     defer deinit(*debug_mesh);
 
-    // @Cleanup: struct literals do not currently support non-constant values
     display_info : Display_Info;
     display_info.wireframe_visible = true;
     display_info.wireframe_width = 1;

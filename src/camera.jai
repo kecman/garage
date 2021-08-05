@@ -250,8 +250,6 @@ fit_scene_on_screen :: (accurate : bool = false) {
     fit_sphere_on_screen(sphere, sphere.radius);
 }
 
-// @Cleanup make an entity_bounding_sphere function
-
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
 fit_on_screen :: (entity : *Entity, accurate : bool = false)
 {

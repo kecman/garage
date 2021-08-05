@@ -28,30 +28,29 @@ Token :: struct {
     offset_into_buffer: s64;
 }
 
-// @Cleanup custom type printing for the standard print?
 to_string :: (tok: Token) -> string {
     if #complete tok.type == {
         case .UNINITIALIZED;
-        return copy_string("(uninitialized token)");
+            return copy_temporary_string("(uninitialized token)");
         case .IDENTIFIER;
-        return copy_string(tok.string_value);
+            return copy_temporary_string(tok.string_value);
         case .INTEGER;
-        return sprint("%", tok.integer_value);
+            return tprint("%", tok.integer_value);
         case .FLOAT;
-        return sprint("%", tok.float_value);
+            return tprint("%", tok.float_value);
         case .SQSTRING;
-        return sprint("'%'", tok.string_value);
+            return tprint("'%'", tok.string_value);
         case .DQSTRING;
-        return sprint("\"%\"", tok.string_value);
+            return tprint("\"%\"", tok.string_value);
         case .EOF;
-        return copy_string("(end-of-file)");
+            return copy_temporary_string("(end-of-file)");
         case;
-        // @Hack
-        c: u8 = xx tok.type;
-        s: string;
-        s.data = *c;
-        s.count = 1;
-        return sprint("#char \"%\"", s);
+            // @Hack
+            c: u8 = xx tok.type;
+            s: string;
+            s.data = *c;
+            s.count = 1;
+            return tprint("#char \"%\"", s);
     }
 }
 

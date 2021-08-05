@@ -1,5 +1,5 @@
-// @Refactor Rewrite this using the lexer/parser
-// @Refactor Read shape from an obj and then turn that into a mesh?
+// @Cleanup Rewrite this using the lexer/parser!
+// @Cleanup Read shape from an obj and then turn that into a mesh?!
 
 has_extension :: (name: string, extension: string) -> bool {
     if name.count < extension.count  return false;

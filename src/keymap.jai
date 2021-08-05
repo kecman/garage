@@ -1,6 +1,3 @@
-
-// @Cleanup: Maybe just use SDL or ImGui keymap types?
-
 Keymap_Proc_Info :: struct {
     name: string;
     proc: #type () -> ();
