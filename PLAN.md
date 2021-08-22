@@ -16,6 +16,9 @@
 - [Bug] Fix obj loading for quad faces
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [README] Document goals/values in the README.md
+- [UI/UX] Item list improvements
+  - Add a tree structure rendered with collapsible nodes
+  - Implement an option to render the item list using the file paths of the item names
 - [UI/UX] Use folding trees in help menu, default to unfolded
 - [UI/UX] Add a circling feature pre-screenshot
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
@@ -136,3 +139,7 @@
 - [XXL] Suggested values when transforming an item
 - [XXL] Think about how to do literate programming in Jai, use this to generate the user documentation. Maybe with notes attached to procedures or decalarations? It would be cool to generate context specific help windows using this information in comments/notes somehow, maybe a local variable matching some pattern get processed by a meta program?
 - [XXL] Think about a plugin system where you write bindings for c++ libraries and benefit from Jai introspection e.g., bind to C++ datastructures/algorithms, and auto generate UI for Jai versions of those for fast experimentation/UI generation
+- [XXL] Add ability to debug/logging in algorithms
+  - (Within-process debugging) Add functions which add items to the scene under collapsible headings which are based on the stack trace
+  - (Between-process debugging) Add protobuf-like protocol for serialisation
+  - Is it possible to interact with the UI while stepping in a debugger through an algorithm within the same process?
